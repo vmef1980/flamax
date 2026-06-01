@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Convertidor por Lotes Controlado</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .config { background: #f4f4f4; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h2>Controlador de Conversión</h2>
+    <div class="config">
+        URL CSV: <input type="text" id="csvUrl" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTk6U3rkUh-DGsx_Pb3PEIRlJT4cpxUM_F1VnWNEkczGR5GvWMYbXg19tIhiA9Zys6r5v73-QwxMco_/pub?output=csv" style="width:80%"><br>
+        Imágenes por grupo: <input type="number" id="loteSize" value="50" style="width:50px">
+        Segundos de espera: <input type="number" id="tiempoEspera" value="180" style="width:50px"> (3 min = 180s)
+        <br><br>
+        <button onclick="iniciar()">1. Cargar CSV</button>
+        <button id="btnProcesar" onclick="procesarLote()" disabled>2. Iniciar Procesamiento</button>
+    </div>
+    <div id="status" style="margin-top:20px; font-weight:bold;"></div>
+
+    <script>
+        let lista = [];
+        let resultado = {};
+        let indice = 0;
+
+        async function iniciar() {
+            const res = await fetch(document.getElementById('csvUrl').value);
+            const csv = await res.text();
+            lista = csv.split('\n').slice(1).filter(l => l.trim() !== "");
+            document.getElementById('btnProcesar').disabled = false;
+            document.getElementById('status').innerText = `CSV Cargado. ${lista.length} imágenes pendientes.`;
+        }
+
+        async function procesarLote() {
+            const tamanoLote = parseInt(document.getElementById('loteSize').value);
+            const espera = parseInt(document.getElementById('tiempoEspera').value) * 1000;
+            const fin = Math.min(indice + tamanoLote, lista.length);
+
+            for (; indice < fin; indice++) {
+                const url = lista[indice].split(',')[2]?.trim();
+                if (url && url.startsWith('http')) {
+                    document.getElementById('status').innerText = `Procesando ${indice + 1}/${lista.length}: ${url.substring(0, 40)}...`;
+                    resultado[url] = await obtener(url);
+                }
+            }
+
+            if (indice < lista.length) {
+                document.getElementById('status').innerText = `Lote terminado. Esperando ${espera/1000}s antes de seguir...`;
+                await new Promise(r => setTimeout(r, espera));
+                procesarLote(); // Se llama a sí mismo para el siguiente grupo
+            } else {
+                descargarJSON();
+                document.getElementById('status').innerText = "¡Proceso finalizado y descargado!";
+            }
+        }
+
+        async function obtener(url) {
+            try {
+                // IMPORTANTE: Recuerda visitar https://cors-anywhere.herokuapp.com/corsdemo antes de iniciar
+                const r = await fetch("https://cors-anywhere.herokuapp.com/" + url);
+                const b = await r.blob();
+                return await new Promise(res => { const fr = new FileReader(); fr.onloadend = () => res(fr.result); fr.readAsDataURL(b); });
+            } catch(e) { return "error"; }
+        }
+
+        function descargarJSON() { 
+            const blob = new Blob([JSON.stringify(resultado, null, 2)], {type:'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "mis_imagenes.json";
+            a.click();
+        }
+    </script>
+</body>
+</html>

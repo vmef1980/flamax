@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Ads HD Pro | OrganizaGT</title>
+    
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3061/3061341.png">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        :root { --primary: #1C3F60; --dark: #1C3F60; --bg: #f4f7f6; }
+        
+        /* Layout Base */
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; flex-direction: row; }
+        
+        /* Estilo Responsive del Sidebar */
+        .sidebar { width: 400px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.05); z-index: 10; }
+        .sidebar-header { padding: 25px 20px; background: var(--dark); color: white; text-align: center; }
+        .sidebar-content { padding: 20px; overflow-y: auto; flex-grow: 1; }
+
+        /* Espaciado de controles */
+        .form-group { margin-bottom: 15px; }
+        .checkbox-group { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; flex-wrap: wrap; }
+        .checkbox-group label { margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 5px; text-transform: none; font-size: 0.8rem; }
+        .checkbox-group input { width: auto; cursor: pointer; }
+
+        label { display: block; font-weight: 800; font-size: 0.7rem; color: #666; margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; }
+        
+        /* Botones */
+        .btn { border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 8px; display: block; text-align: center; text-decoration: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: var(--dark); color: white; font-size: 0.75rem; }
+
+        /* Área de Diseño */
+        .workspace { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 40px; background: #cbd5e0; position: relative; }
+        .canvas-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 95%; }
+        canvas { max-width: 100%; height: auto; border-radius: 8px; display: block; background: #fff; }
+
+        .copy-section { background: #fdfaf0; padding: 12px; border-radius: 10px; border: 1px solid #faead1; margin-top: 10px; }
+        #copyTextArea { height: 120px; font-size: 0.8rem; border: 1px solid #ddd; background: white; resize: none; margin-bottom: 8px; }
+
+        /* --- MEDIA QUERIES PARA CELULAR --- */
+        @media (max-width: 850px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ddd; height: auto; }
+            .workspace { width: 100%; height: auto; padding: 20px 0; }
+            .sidebar-content { overflow-y: visible; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2 id="js-brand-name" style="margin:0; font-size: 1.2rem;">MARKETING TOOL HD</h2>
+        <p id="js-brand-tagline" style="margin:5px 0 0; opacity: 0.7; font-size: 0.7rem;">OrganizaGT Business</p>
+    </div>
+    
+    <div class="sidebar-content">
+        <div class="form-group">
+            <label>1. Catálogo (CSV)</label>
+            <input type="text" id="csvUrl" value="">
+            <button class="btn btn-primary" onclick="cargarCatalogo()" style="margin-top:8px;">Sincronizar</button>
+        </div>
+
+        <div class="form-group">
+            <label>Link Web / Catálogo</label>
+            <input type="text" id="userWeb" placeholder="www.tuweb.com" oninput="actualizarInterfaz()">
+        </div>
+        <div class="form-group">
+            <label>WhatsApp</label>
+            <input type="text" id="userWA" placeholder="502XXXXXXXX" oninput="actualizarInterfaz()">
+        </div>
+
+        <label>Mostrar en la imagen:</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="showTitle" checked onchange="actualizarInterfaz()"> Título</label>
+            <label><input type="checkbox" id="showCat" checked onchange="actualizarInterfaz()"> Categoría</label>
+            <label><input type="checkbox" id="showSub" checked onchange="actualizarInterfaz()"> SubCat</label>
+            <label><input type="checkbox" id="showPrice" checked onchange="actualizarInterfaz()"> Precio</label>
+            <label><input type="checkbox" id="showWeb" onchange="actualizarInterfaz()"> Web</label>
+            <label><input type="checkbox" id="showWA" onchange="actualizarInterfaz()"> WhatsApp</label>
+        </div>
+
+        <div class="form-group">
+            <label>Producto (Ordenado por Subcategoría)</label>
+            <select id="productSelect" onchange="actualizarInterfaz()">
+                <option value="">-- Selecciona --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Plataforma y Formato</label>
+            <select id="platformSelect" onchange="actualizarInterfaz()">
+                <option value="ig_post">Instagram / Facebook (1:1)</option>
+                <option value="tiktok">TikTok / Reels / Stories (9:16)</option>
+                <option value="fb_ads">Facebook Ads (16:9)</option>
+                <option value="ig_portrait">Instagram Portrait (4:5)</option>
+            </select>
+        </div>
+
+        <div class="copy-section">
+            <label>Copy y Hashtags</label>
+            <textarea id="copyTextArea" readonly></textarea>
+            <button class="btn btn-info" onclick="copiarAlPortapapeles()">Copiar Texto</button>
+        </div>
+
+        <div class="form-group" style="margin-top:15px;">
+            <label>Color de Marca</label>
+            <input type="color" id="accentColor" value="#F47C20" onchange="actualizarInterfaz()">
+        </div>
+
+        <button class="btn btn-success" id="btnDescargar" onclick="descargarTodo()">
+            <i class="bi bi-download"></i> Descargar Imágenes
+        </button>
+    </div>
+</div>
+
+<div class="workspace" id="previewArea">
+</div>
+
+<script>
+    const COMERCIAL_CONFIG = {
+        tituloPagina: "Social Ads HD Pro | GuateCocina",
+        favicon: "/img/GuateCocina.ico",
+        nombreHeader: "MARKETING TOOL HD",
+        tagline: "EKIPRO Business",
+        logoParaImagen: "/img/GuateCocina.png",
+        csvDefault: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwVpHIAUk9o5t1bGr2TEn7TcSLvf_XGbX2-9irqECUDFHgdm_TjSSifw4VDKHTfMiX-dZmNz6cqXk_/pub?output=csv",
+        colorDefault: "#007BC4",
+        hashtagsBase: "#Guatemala #Ventas #TiendaOnline #EnviosGuate #PagoContraEntrega #Ofertas #CocinaGuatemala #Restaurantes #Hoteles #Comedores #Bar #Bares"
+    };
+
+    window.onload = () => {
+        document.title = COMERCIAL_CONFIG.tituloPagina;
+        document.querySelector("link[rel='icon']").href = COMERCIAL_CONFIG.favicon;
+        document.getElementById('js-brand-name').innerText = COMERCIAL_CONFIG.nombreHeader;
+        document.getElementById('js-brand-tagline').innerText = COMERCIAL_CONFIG.tagline;
+        document.getElementById('csvUrl').value = COMERCIAL_CONFIG.csvDefault;
+        document.getElementById('accentColor').value = COMERCIAL_CONFIG.colorDefault;
+    };
+
+    const PROXY = "https://images.weserv.nl/?url=";
+    const LOGO_URL = COMERCIAL_CONFIG.logoParaImagen; 
+    let productosGlobal = [];
+
+    function csvToArray(strData) {
+        const objPattern = new RegExp(("(\\,|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\\,\\r\\n]*))"), "gi");
+        let arrData = [[]], arrMatches = null;
+        while (arrMatches = objPattern.exec(strData)) {
+            let strMatchedDelimiter = arrMatches[1];
+            if (strMatchedDelimiter.length && (strMatchedDelimiter != ",")) arrData.push([]);
+            let strMatchedValue = arrMatches[2] ? arrMatches[2].replace(new RegExp("\"\"", "g"), "\"") : arrMatches[3];
+            arrData[arrData.length - 1].push(strMatchedValue);
+        }
+        return arrData;
+    }
+
+    async function cargarCatalogo() {
+        const url = document.getElementById('csvUrl').value;
+        try {
+            const res = await fetch(`${url}&t=${Date.now()}`);
+            const text = await res.text();
+            const rawRows = csvToArray(text);
+            
+            productosGlobal = rawRows.slice(1).filter(r => r.length > 1 && r[0] !== "").map(r => {
+                const nombreCompleto = r[1] || "";
+                const partes = nombreCompleto.split('|');
+                return {
+                    id: r[0], 
+                    tituloDisplay: partes[0].trim(), 
+                    tituloGancho: partes[1] ? partes[1].trim() : partes[0].trim(), 
+                    imgP: r[2], 
+                    imgG: r[3], 
+                    cat: r[5], 
+                    subCat: r[7], 
+                    desc: r[8], 
+                    precio: r[9]
+                };
+            });
+
+            productosGlobal.sort((a, b) => a.subCat.localeCompare(b.subCat));
+
+            const select = document.getElementById('productSelect');
+            select.innerHTML = '<option value="">-- Elige un producto --</option>';
+            
+            let currentSubCat = "";
+            let groupElement = null;
+
+            productosGlobal.forEach(p => {
+                if (p.subCat !== currentSubCat) {
+                    currentSubCat = p.subCat;
+                    groupElement = document.createElement('optgroup');
+                    groupElement.label = currentSubCat.toUpperCase();
+                    select.appendChild(groupElement);
+                }
+                let opt = document.createElement('option');
+                opt.value = p.id; 
+                opt.textContent = p.tituloDisplay; 
+                if(groupElement) groupElement.appendChild(opt);
+                else select.appendChild(opt);
+            });
+            alert("✅ Catálogo sincronizado.");
+        } catch (e) { alert("❌ Error de carga."); }
+    }
+
+    function actualizarInterfaz() {
+        renderizarPublicidad();
+        generarCopyCompleto();
+    }
+
+    function generarCopyCompleto() {
+        const id = document.getElementById('productSelect').value;
+        const p = productosGlobal.find(x => x.id === id);
+        const userWeb = document.getElementById('userWeb').value || "Visita nuestra tienda";
+        const userWA = document.getElementById('userWA').value || "";
+        if(!p) return;
+
+        const waLink = userWA ? `https://wa.me/${userWA.replace(/\D/g,'')}` : "Contáctanos";
+        const tituloMP = `${p.tituloDisplay} | Nuevo | Envíos a toda Guatemala | Pago Contra Entrega`;
+        
+        const palabrasClave = p.tituloDisplay.toLowerCase()
+            .replace(/[^\w\s]/gi, '')
+            .split(' ')
+            .filter(w => w.length > 3)
+            .map(w => `#${w.charAt(0).toUpperCase() + w.slice(1)}`);
+        
+        const extraTags = [...new Set(palabrasClave)].slice(0, 10).join(' ');
+        const hashtagsRelacionados = `${extraTags} #Guatemala #Ventas #TiendaOnline #EnviosGuate #PagoContraEntrega #MarketplaceGT #EKIPRO`;
+
+        document.getElementById('copyTextArea').value = 
+            `📌 TÍTULO MARKETPLACE:\n${tituloMP}\n\n` +
+            `⭐ ¡${p.tituloGancho.toUpperCase()}! ⭐\n\n🔹 ${p.tituloDisplay.toUpperCase()}\n\n📝 DESCRIPCIÓN:\n${p.desc}\n\n🚚 ENVÍOS A TODA GUATEMALA 🇬🇹\n💳 PAGOS: Efectivo, Transferencia y VISA.\n*(Aplican restricciones)\n\n🛒 COMPRA AQUÍ: ${userWeb}\n📲 WHATSAPP: ${waLink}\n\n${hashtagsRelacionados}`;
+    }
+
+    async function renderizarPublicidad() {
+        const id = document.getElementById('productSelect').value;
+        const platform = document.getElementById('platformSelect').value;
+        const color = document.getElementById('accentColor').value;
+        const area = document.getElementById('previewArea');
+        const p = productosGlobal.find(x => x.id === id);
+        if(!p) return;
+
+        area.innerHTML = ""; 
+        let imagenes = [p.imgP];
+        if(p.imgG) {
+            const gal = p.imgG.split('|').map(u => u.trim()).filter(u => u !== "");
+            imagenes = [...imagenes, ...gal];
+        }
+
+        for(let [index, url] of imagenes.entries()) {
+            if(!url) continue;
+            const card = document.createElement('div');
+            card.className = "canvas-card";
+            const canvas = document.createElement('canvas');
+            card.appendChild(canvas);
+            area.appendChild(card);
+            await dibujarArteOptimizado(canvas, url, p, platform, color);
+        }
+    }
+
+    async function dibujarArteOptimizado(canvas, imgUrl, p, platform, color) {
+        const ctx = canvas.getContext('2d');
+        const showTitle = document.getElementById('showTitle').checked;
+        const showCat = document.getElementById('showCat').checked;
+        const showSub = document.getElementById('showSub').checked;
+        const showWeb = document.getElementById('showWeb').checked;
+        const showWA = document.getElementById('showWA').checked;
+        const showPrice = document.getElementById('showPrice').checked;
+        const userWeb = document.getElementById('userWeb').value;
+        const userWA = document.getElementById('userWA').value;
+
+        let w = 1080, h = 1080;
+        if(platform === 'tiktok') h = 1920;
+        if(platform === 'fb_ads') { w = 1200; h = 630; }
+        if(platform === 'ig_portrait') h = 1350;
+
+        canvas.width = w; canvas.height = h;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,w,h);
+
+        try {
+            const img = await cargarImg(imgUrl);
+            const scale = Math.max(w / img.width, h / img.height);
+            ctx.drawImage(img, (w/2)-(img.width*scale/2), (h/2)-(img.height*scale/2), img.width*scale, img.height*scale);
+
+            // Gradiente Inferior
+            const grad = ctx.createLinearGradient(0, h, 0, h*0.5);
+            grad.addColorStop(0, "rgba(0,0,0,0.85)");
+            grad.addColorStop(1, "transparent");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, h*0.4, w, h*0.6);
+
+            // Gradiente Superior (para que se lean Cat/SubCat si hay fondos claros)
+            const gradTop = ctx.createLinearGradient(0, 0, 0, 250);
+            gradTop.addColorStop(0, "rgba(0,0,0,0.4)");
+            gradTop.addColorStop(1, "transparent");
+            ctx.fillStyle = gradTop;
+            ctx.fillRect(0, 0, w, 250);
+
+            // --- IZQUIERDA INFERIOR: TITULO Y PRECIO ---
+            ctx.textAlign = "left";
+            if(showPrice) {
+                ctx.fillStyle = color;
+                ctx.font = "bold 100px Arial";
+                ctx.fillText("Q" + p.precio, 50, h - 60);
+            }
+            if(showTitle) {
+                ctx.fillStyle = "white";
+                let textoAMostrar = p.tituloGancho.toUpperCase();
+                let fontSize = 60;
+                ctx.font = `bold ${fontSize}px Arial`;
+                while(ctx.measureText(textoAMostrar).width > (w * 0.55) && fontSize > 20) {
+                    fontSize -= 2;
+                    ctx.font = `bold ${fontSize}px Arial`;
+                }
+                ctx.fillText(textoAMostrar, 50, h - 160);
+            }
+
+            // --- DERECHA INFERIOR: CONTACTO (WA Y WEB) ---
+            ctx.textAlign = "right";
+            let offsetBottom = 60; 
+            if(showWA && userWA) {
+                ctx.fillStyle = "#25D366";
+                ctx.font = "bold 30px Arial";
+                ctx.fillText("📲 " + userWA, w - 50, h - offsetBottom);
+                offsetBottom += 40;
+            }
+            if(showWeb && userWeb) {
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText("🛒 " + userWeb, w - 50, h - offsetBottom);
+            }
+
+            // --- DERECHA SUPERIOR: CATEGORIAS (LEJOS DEL TITULO) ---
+            ctx.textAlign = "right";
+            let offsetTop = 60; 
+            if(showSub) {
+                ctx.fillStyle = "rgba(255,255,255,0.9)";
+                ctx.font = "bold 32px Arial";
+                ctx.fillText(p.subCat.toUpperCase(), w - 50, offsetTop);
+                offsetTop += 40;
+            }
+            if(showCat) {
+                ctx.fillStyle = "rgba(255,255,255,0.7)";
+                ctx.font = "italic 28px Arial";
+                ctx.fillText(p.cat, w - 50, offsetTop);
+            }
+
+            const logo = await cargarImg(LOGO_URL).catch(() => null);
+            if(logo) ctx.drawImage(logo, 40, 40, 150, 150 * (logo.height / logo.width));
+        } catch (e) { console.error(e); }
+    }
+
+    function cargarImg(url) {
+        return new Promise((res, rej) => {
+            if (!url) { rej("URL vacía"); return; }
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            let cleanUrl = url.trim().replace(/^https?:\/\//, '');
+            img.src = PROXY + encodeURIComponent(cleanUrl);
+            img.onload = () => res(img);
+            img.onerror = (err) => {
+                const imgRetry = new Image();
+                imgRetry.crossOrigin = "anonymous";
+                imgRetry.src = url;
+                imgRetry.onload = () => res(imgRetry);
+                imgRetry.onerror = () => rej(err);
+            };
+        });
+    }
+
+    function copiarAlPortapapeles() {
+        const area = document.getElementById('copyTextArea');
+        area.select();
+        document.execCommand("copy");
+        alert("📋 Texto copiado.");
+    }
+
+    function descargarTodo() {
+        const canvases = document.querySelectorAll('#previewArea canvas');
+        const pSelect = document.getElementById('productSelect');
+        if (pSelect.value === "" || canvases.length === 0) return alert("Selecciona un producto y sincroniza.");
+        const productName = pSelect.options[pSelect.selectedIndex].text.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        canvases.forEach((canvas, i) => {
+            const fileName = `${productName}_${i + 1}.png`;
+            const dataUrl = canvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+</script>
+</body>
+</html>

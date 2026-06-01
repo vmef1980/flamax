@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es-GT" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="referrer" content="no-referrer-when-downgrade" />
+  <meta name="robots" content="index, follow, noimageindex" />
+  <meta name="theme-color" id="meta-theme-color" content="#003772" />
+  
+  <title id="page-title">Cargando Catálogo de Productos...</title>
+  <meta name="description" id="meta-desc" content="Catálogo oficial de suministros para cocinas, restaurantes, hoteles y bares en Guatemala." />
+  <meta property="og:type" content="website" id="meta-og-type" />
+  <meta property="og:title" content="Flamax | Catálogo de Productos" id="meta-og-title" />
+  <meta property="og:description" content="Catálogo oficial de suministros para cocinas, restaurantes, hoteles y bares en Guatemala." id="meta-og-description" />
+  <meta property="og:image" content="img/Flamax-v1.png" id="meta-og-image" />
+  <meta name="twitter:card" content="summary_large_image" id="meta-twitter-card" />
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+
+  <style>
+    :root {
+      --primary: #003772;
+      --primary-dark: #9fc5e8;
+      --success: #28a745;
+      --danger: #dc3545;
+      --accent: #0074B7;
+      --highlight: #FFD447;
+      --text-dark: #1C3F60;
+      --text-soft: #666;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 32px rgba(0,0,0,0.06);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg, #fff8f0 0%, #e6f7ff 100%); 
+      color: var(--text-dark); 
+      line-height: 1.6; 
+      min-height: 100vh;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    img { -webkit-user-drag: none; pointer-events: none; }
+    input, button, select, .boton-categoria, .link-leer-mas, #carrito-float, .thumb, .nav-modal button, .btn-subfiltro, a, #ollita-animada {
+      pointer-events: auto !important;
+    }
+
+    .logo-glow {
+      filter: drop-shadow(0 0 8px var(--primary));
+      animation: pulse-glow 3s infinite ease-in-out;
+    }
+    @keyframes pulse-glow {
+      0% { filter: drop-shadow(0 0 5px var(--primary)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 12px var(--primary)); transform: scale(1.03); }
+      100% { filter: drop-shadow(0 0 5px var(--primary)); transform: scale(1); }
+    }
+
+    #page-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 994;
+      background: rgba(255,255,255,0.98); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border); display: flex; justify-content: center;
+      padding: 0.65rem 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .page-header-inner {
+      display: flex; align-items: center; gap: 1rem; width: min(1200px, 100%); justify-content: space-between;
+    }
+    .header-content-right { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .header-logo { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; object-fit: contain; }
+    .page-header-copy { display: flex; flex-direction: column; min-width: 0; }
+    #header-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+    #header-subtitle { font-size: 0.8rem; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 450px; }
+
+    #toggle-menu.header-toggle {
+      background: var(--primary);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 0 1.1rem; height: 42px; border-radius: 20px;
+      font-size: 0.9rem; font-weight: 700; color: white;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: var(--transition); flex-shrink: 0;
+    }
+    #toggle-menu.header-toggle:hover { transform: scale(1.03); filter: brightness(1.1); }
+
+    aside { 
+      position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; 
+      background: rgba(255,255,255,0.98); backdrop-filter: blur(16px); 
+      border-right: 1px solid var(--border); transition: left 0.4s ease; 
+      z-index: 1001; display: flex; flex-direction: column; 
+    }
+    aside.abierto { left: 0; box-shadow: 10px 0 50px rgba(0,0,0,0.1); }
+    aside header { padding: 2rem 1.5rem 1rem; text-align: center; flex-shrink: 0; }
+    aside .logo { width: 120px; border-radius: 12px; }
+    #buscar-categoria { width: 90%; margin: 0 auto 1rem; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.9rem; outline: none; transition: var(--transition); }
+    #buscar-categoria:focus { border-color: var(--accent); }
+    #menu-categorias { flex-grow: 1; overflow-y: auto; padding: 0 1rem 1rem; }
+
+    .aside-footer { padding: 1rem; background: #fdfdfd; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-soft); text-align: center; }
+    .aside-footer .social-icons { margin-bottom: 6px; font-size: 1.1rem; display: flex; justify-content: center; gap: 15px; color: var(--primary); }
+    .aside-footer .social-icons a { color: inherit; text-decoration: none; }
+
+    .boton-categoria { display: block; width: 100%; margin-bottom: 0.5rem; padding: 0.85rem 1.1rem; background: white; border: none; border-radius: var(--radius); font-weight: 600; text-align: left; cursor: pointer; transition: var(--transition); box-shadow: 0 3px 8px rgba(0,0,0,0.02); color: var(--text-dark); }
+    .boton-categoria:hover { background: var(--primary); color: white; transform: translateX(4px); }
+    .btn-ver-todo { background: #f8f9fa; color: var(--text-dark); border: 1px dashed var(--primary); }
+
+    #cerrar-menu { position: absolute; top: 1rem; right: 1rem; background: #eee; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    main { flex: 1; padding: 6rem 1rem 120px; max-width: 1200px; margin: 0 auto; width: 100%; }
+    #titulo-principal { text-align: center; font-size: 2.2rem; font-weight: 800; margin-bottom: 0.3rem; background: linear-gradient(135deg, var(--text-dark), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .subtitle-seo { text-align: center; font-size: 1rem; color: var(--text-soft); max-width: 700px; margin: 0 auto 1.2rem; font-weight: 500; }
+
+    .barra-controles-catalogo {
+      background: white; padding: 1.2rem; border-radius: var(--radius);
+      border: 1px solid var(--border); margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+    .seccion-busqueda-orden { display: flex; gap: 0.75rem; align-items: center; width: 100%; }
+    .input-busqueda-moderno { flex: 1; position: relative; }
+    .input-busqueda-moderno i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-soft); }
+    .input-busqueda-moderno input {
+      width: 100%; padding: 0.8rem 1rem 0.8rem 2.6rem; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem; outline: none; background: #f8f9fa; transition: var(--transition);
+    }
+    .input-busqueda-moderno input:focus { border-color: var(--accent); background: white; }
+    
+    .btn-limpiar-filtros {
+      padding: 0.8rem 1.2rem; background: #f1f3f5; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-weight: 600; font-size: 0.9rem; color: var(--text-dark);
+      cursor: pointer; display: flex; align-items: center; gap: 6px; transition: var(--transition); white-space: nowrap;
+    }
+    .btn-limpiar-filtros:hover { background: #e2e6ea; }
+
+    .select-ordenar-moderno { position: relative; min-width: 190px; }
+    .select-ordenar-moderno select {
+      width: 100%; padding: 0.8rem 2rem 0.8rem 1rem; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      color: var(--text-dark); background: white; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none;
+    }
+    .select-ordenar-moderno::after {
+      content: "\f2ea"; font-family: "bootstrap-icons"; position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-soft); font-size: 0.85rem;
+    }
+
+    .contador-resultados { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin: 0.5rem 0 0.2rem 0.2rem; }
+
+    #contenedor-filtros-sub { display: flex; gap: 8px; overflow-x: auto; padding: 0.4rem 0 0; width: 100%; scrollbar-width: none; }
+    #contenedor-filtros-sub::-webkit-scrollbar { display: none; }
+    .btn-subfiltro { padding: 0.5rem 1rem; background: #f1f3f5; border: 1px solid transparent; border-radius: 25px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: var(--transition); white-space: nowrap; color: var(--text-dark); }
+    .btn-subfiltro.activo { background: var(--accent); color: white; box-shadow: 0 3px 8px rgba(0, 116, 183, 0.2); }
+
+    #contenedor-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    
+    .producto { background: white; border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; transition: var(--transition); overflow: hidden; position: relative; }
+    .producto:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    
+    .imagen-contenedor { width: 100%; padding-bottom: 100%; position: relative; background: #fff; cursor: pointer; }
+    .imagen-contenedor img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 12px; transition: transform 0.3s ease; }
+    .producto:hover .imagen-contenedor img { transform: scale(1.02); }
+
+    .contenido { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+    .producto h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); line-height: 1.4; min-height: 2.6rem; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .descripcion-container { margin-bottom: 0.2rem; }
+    .descripcion-texto { font-size: 0.85rem; color: var(--text-soft); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+    .descripcion-texto.completa { display: block; -webkit-line-clamp: initial; line-clamp: initial; }
+    .link-leer-mas { display: inline-block; font-size: 0.75rem; color: var(--accent); font-weight: 700; cursor: pointer; text-decoration: none; margin-top: 2px; }
+    
+    .badge-estado { font-size: 0.65rem; font-weight: 800; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; display: inline-block; width: fit-content; }
+    .estado-disponible { background: #e8f5e9; color: var(--success); }
+    .estado-agotado { background: #ffebee; color: var(--danger); }
+
+    .precio { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin-top: auto; padding-top: 0.3rem; }
+    .btn-add { width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-add:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-add.success-state { background: var(--success) !important; }
+    .btn-add:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
+
+    .trust-badges { display: flex; flex-direction: column; gap: 0.75rem; max-width: 1200px; margin: 2rem auto 0; width: 100%; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+    .badge-card { background: white; padding: 1rem; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); }
+    .badge-card i { font-size: 1.3rem; color: var(--accent); }
+    .badge-text h4 { font-size: 0.9rem; font-weight: 700; color: var(--text-dark); }
+    .badge-text div { font-size: 0.8rem; color: var(--text-soft); display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+
+    .footer-principal { 
+      position: fixed; bottom: 0; left: 0; width: 100%; padding: 1rem; 
+      background: rgba(255,255,255,0.94); backdrop-filter: blur(10px); 
+      border-top: 1px solid var(--border); text-align: center; z-index: 900;
+    }
+    .footer-links { display: flex; justify-content: center; gap: 16px; margin-bottom: 4px; font-size: 0.8rem; font-weight: 600; color: var(--text-dark); }
+    .footer-links a { text-decoration: none; color: inherit; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-info { font-size: 0.75rem; color: var(--text-soft); display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+    #modal-producto { position: fixed; inset: 0; background: rgba(12, 35, 64, 0.6); backdrop-filter: blur(6px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-contenido { background: white; border-radius: 20px; max-width: 800px; width: 100%; position: relative; max-height: 85vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    .visor-principal { position: relative; width: 100%; height: 320px; border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; background: #fff; }
+    .foto-principal { max-width: 90%; max-height: 90%; object-fit: contain; }
+
+    #carrito-float { position: fixed; right: 1rem; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 999; bottom: 80px; background: var(--highlight); color: var(--text-dark); font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .cerrar-modal { position: absolute; top: 1rem; right: 1rem; background: #f1f3f5; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    #ollita-animada {
+      position: fixed; top: 45%; right: 0; width: 64px; z-index: 9999; cursor: pointer;
+      transition: transform 0.3s ease; filter: drop-shadow(-2px 4px 10px rgba(0,0,0,0.15));
+      text-decoration: none; display: flex; flex-direction: column; align-items: center;
+      background: white; padding: 8px 4px; border-radius: 12px 0 0 12px; border: 1px solid var(--border); border-right: none;
+      animation: flotar 3s ease-in-out infinite;
+    }
+    #ollita-animada img { width: 38px; height: auto; }
+    .ollita-text { font-size: 0.65rem; color: #25D366; font-weight: 800; text-align: center; margin-top: 2px; text-transform: uppercase; }
+
+    @keyframes flotar {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0px); }
+    }
+    #ollita-animada:hover { transform: scale(1.08) translateX(-2px); }
+
+    @media (max-width: 768px) {
+      .modal-contenido { grid-template-columns: 1fr; padding: 1.2rem; }
+      .visor-principal { height: 240px; }
+      .seccion-busqueda-orden { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      .select-ordenar-moderno { width: 100%; }
+      #contenedor-productos { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .contenido { padding: 0.75rem; gap: 0.3rem; }
+      .producto h3 { font-size: 0.85rem; min-height: 2.4rem; }
+      .descripcion-container { display: none; }
+      .precio { font-size: 1.1rem; }
+      .btn-add { padding: 0.65rem; font-size: 0.85rem; }
+      #header-subtitle { display: none; }
+      #titulo-principal { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <noscript>
+    <div style="padding:1rem; background:#fff3cd; color:#856404; text-align:center;">
+      Esta página requiere JavaScript para mostrar el catálogo. Habilita JavaScript en tu navegador.
+    </div>
+  </noscript>
+
+  <aside id="aside-menu">
+    <header>
+        <img id="logo-sidebar" src="" alt="Logo" class="logo logo-glow">
+    </header>
+    <input type="text" id="buscar-categoria" placeholder="¿Qué categoría buscas?">
+    <nav id="menu-categorias"></nav>
+    <div class="aside-footer" id="aside-footer-container"></div>
+    <button id="cerrar-menu"><i class="bi bi-x-lg"></i></button>
+  </aside>
+
+  <header id="page-header" aria-label="Encabezado principal">
+    <div class="page-header-inner">
+      <button id="toggle-menu" class="header-toggle" aria-label="Abrir menú del catálogo">
+        <i class="bi bi-list"></i>
+        <span id="label-btn-menu">Productos</span>
+      </button>
+      <div class="header-content-right">
+        <img id="header-logo" src="" alt="" class="header-logo">
+        <div class="page-header-copy">
+          <span id="header-title"></span>
+          <p id="header-subtitle"></p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h1 id="titulo-principal"></h1>
+    <p class="subtitle-seo" id="texto-subtitulo"></p>
+    
+    <div class="barra-controles-catalogo">
+      <div class="seccion-busqueda-orden">
+        <div class="input-busqueda-moderno">
+          <i class="bi bi-search"></i>
+          <input type="text" id="buscar-producto-central" placeholder="Buscar por nombre, código o palabra clave...">
+        </div>
+        <button class="btn-limpiar-filtros" id="btn-limpiar-filtros" title="Mostrar todo y limpiar filtros">
+          <i class="bi bi-arrow-clockwise"></i> Volver / Limpiar
+        </button>
+        <div class="select-ordenar-moderno">
+          <select id="ordenar-productos">
+            <option value="predeterminado">Destacados</option>
+            <option value="precio-asc">Precio: Menor a Mayor</option>
+            <option value="precio-desc">Precio: Mayor a Menor</option>
+            <option value="alfa-asc">Nombre: A - Z</option>
+            <option value="alfa-desc">Nombre: Z - A</option>
+          </select>
+        </div>
+      </div>
+      <div class="contador-resultados" id="contador-resultados">Cargando existencias...</div>
+      <div id="contenedor-filtros-sub"></div>
+    </div>
+
+    <section id="contenedor-productos"></section> 
+    
+    <div class="trust-badges" id="container-badges"></div>
+  </main>
+
+  <footer class="footer-principal">
+    <div class="footer-content">
+      <div class="footer-links" id="footer-social-links"></div>
+      <div class="footer-info">
+        <span id="f-copy"></span> | <span id="f-loc"></span> | <span id="f-dev"></span>
+      </div>
+    </div>
+  </footer>
+
+  <a href="carrito.html" id="carrito-float" aria-label="Ir al carrito">
+    <i class="bi bi-cart-fill"></i>
+    <span id="contador-carrito" style="position:absolute; top:-2px; right:-2px; background:var(--danger); color:white; width:20px; height:20px; border-radius:50%; font-size:0.65rem; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold;">0</span>
+  </a>
+  
+  <a id="ollita-animada" href="#" target="_blank" rel="noopener noreferrer">
+    <img src="img/Ollita-v3.png" id="img-ollita" alt="WhatsApp">
+    <span class="ollita-text">Chat</span>
+  </a>
+
+  <div id="modal-producto">
+    <div class="modal-contenido">
+      <button class="cerrar-modal" id="cerrar-modal-btn"><i class="bi bi-x-lg"></i></button>
+      <div class="galeria-modal">
+        <div class="visor-principal">
+            <img id="img-modal-principal" src="" class="foto-principal" alt="Vista ampliada">
+            <div id="nav-modal-fotos" style="position: absolute; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; z-index: 5;">
+                <button id="prev-foto" style="background:rgba(255,255,255,0.9); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer;"><i class="bi bi-chevron-left"></i></button>
+                <button id="next-foto" style="background:rgba(255,255,255,0.9); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer;"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>
+        <div id="modal-thumbnails" style="display:flex; gap:6px; margin-top:10px; overflow-x:auto; padding-bottom:4px;"></div>
+      </div>
+      <div class="info-modal" style="display:flex; flex-direction:column;">
+        <div id="modal-badge-estado" style="margin-bottom:0.5rem;"></div>
+        <h2 id="modal-titulo" style="margin-bottom:0.75rem; font-size:1.3rem; color:var(--text-dark); line-height:1.3;"></h2>
+        <p id="modal-descripcion" style="margin-bottom:1.25rem; color:#555; font-size: 0.88rem; line-height:1.5; overflow-y:auto; max-height:120px;"></p>
+        <div id="modal-precio" style="font-size:1.6rem; font-weight:800; color:var(--primary); margin-bottom:1.25rem; margin-top:auto;"></div>
+        <button id="btn-agregar-modal" class="btn-add">Agregar al pedido</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const CONFIG = {
+      nombreNegocio: "Flamax",
+      tituloPagina: "Flamax | Catálogo de Productos",
+      eslogan: "De todo para Cocinas, Restaurantes, Hoteles y Bares",
+      metaDescripcion: "Tu aliado en suministros para Cocinas, Restaurantes, Hoteles y Bares en Guatemala.",
+      copyright: "© 2026",
+      developer: "Puzzle Solutions",
+      ubicacion: "Ciudad de Guatemala, GT",
+      telefonoWhatsApp: "50241084481",
+      mensajeWhatsApp: "Hola, deseo solicitar más información sobre los productos del catálogo.", 
+      simboloMoneda: "Q",
+      logoImg: "img/Flamax-v1.png",
+      seoImage: "img/Flamax-v1.png",
+      faviconImg: "img/Flamax-v1.ico",
+      headerBar: {
+        habilitado: true,
+        logo: "img/Flamax-v1.png",
+        alt: "Logo Flamax",
+        titulo: "Catálogo de Productos de Flamax",
+        subtitulo: "Todo lo que necesitas para tu cocina, restaurante, hotel y bar en Guatemala"
+      },
+      csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwVpHIAUk9o5t1bGr2TEn7TcSLvf_XGbX2-9irqECUDFHgdm_TjSSifw4VDKHTfMiX-dZmNz6cqXk_/pub?output=csv",
+      colores: {
+        primario: "#003772",
+        primarioOscuro: "#9fc5e8",
+        acento: "#0074B7",
+        fondoGradiente: "linear-gradient(135deg, #fff8f0 0%, #e6f7ff 100%)"
+      },
+      redesSociales: [
+        { icon: "bi-facebook", url: "#", label: "Facebook" },
+        { icon: "bi-instagram", url: "#", label: "Instagram" },
+        { icon: "bi-tiktok", url: "#", label: "TikTok" }
+      ],
+      badges: [
+        {
+          icon: "bi-truck",
+          titulo: "Envíos disponibles a toda Guatemala",
+          items: ["• Entrega en 24 horas en la capital", "• Rastreo para departamentos"]
+        },
+        {
+          icon: "bi-shield-lock",
+          titulo: "Compra fácil y segura",
+          items: ["• Efectivo o Transferencia bancaria", "• Pago contra entrega (deptos. 5% comisión)", "• Tarjetas Visa (Aplican restricciones)"]
+        }
+      ]
+    };
+
+    let productos = [];
+    let categoriaActualProductos = [];
+    let subcategoriaSeleccionada = "Todas";
+
+    function parsearCSV(texto) {
+        const lineas = [];
+        let actual = [];
+        let campo = "";
+        let enComillas = false;
+        for (let i = 0; i < texto.length; i++) {
+            const char = texto[i];
+            const prox = texto[i + 1];
+            if (char === '"' && enComillas && prox === '"') { campo += '"'; i++; }
+            else if (char === '"') { enComillas = !enComillas; }
+            else if (char === ',' && !enComillas) { actual.push(campo.trim()); campo = ""; }
+            else if ((char === '\r' || char === '\n') && !enComillas) {
+                if (campo || actual.length > 0) { actual.push(campo.trim()); lineas.push(actual); }
+                actual = []; campo = "";
+                if (char === '\r' && prox === '\n') i++;
+            } else { campo += char; }
+        }
+        if (campo || actual.length > 0) { actual.push(campo.trim()); lineas.push(actual); }
+        return lineas;
+    }
+
+    function driveThumb(url, size = 400) {
+        if (!url) return url;
+        let m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (!m) m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w${size}`;
+        return url;
+    }
+
+    async function cargarDatos() {
+        try {
+            const res = await fetch(CONFIG.csvUrl);
+            const rawText = await res.text();
+            const filas = parsearCSV(rawText);
+            
+            productos = filas.slice(1).map(f => {
+                let precioLimpio = f[9] ? f[9].replace(/[^0-9.]/g, '') : "0";
+                return {
+                    id: f[0],
+                    titulo: f[1],
+                    imagen: driveThumb(f[2]),
+                    imagenes: f[3] ? f[3].split('|').map(i => driveThumb(i.trim())) : [],
+                    categoria: { id: f[4], nombre: f[5] },
+                    subcategoria: f[7] || "", 
+                    descripcion: f[8] || "",
+                    precio: parseFloat(precioLimpio) || 0,
+                    estado: (f[10] || "DISPONIBLE").toUpperCase()
+                };
+            }).filter(p => p.id);
+
+            categoriaActualProductos = [...productos];
+            iniciarApp();
+        } catch (e) {
+            console.error("Error cargando Google Sheets:", e);
+            document.getElementById("contenedor-productos").innerHTML = "<p style='text-align:center; padding:2rem;'>Error al conectar con el catálogo de productos.</p>";
+        }
+    }
+
+    const aplicarConfig = () => {
+      document.title = CONFIG.tituloPagina; 
+      document.getElementById("page-title").textContent = CONFIG.tituloPagina;
+      document.getElementById("meta-desc").content = CONFIG.metaDescripcion;
+      document.getElementById("meta-og-title").content = CONFIG.tituloPagina;
+      document.getElementById("meta-og-description").content = CONFIG.metaDescripcion;
+      document.getElementById("meta-og-image").content = CONFIG.seoImage;
+      document.getElementById("meta-theme-color").content = CONFIG.colores.primario;
+      document.getElementById("titulo-principal").textContent = CONFIG.nombreNegocio;
+      document.getElementById("texto-subtitulo").textContent = CONFIG.eslogan;
+      document.getElementById("logo-sidebar").src = CONFIG.logoImg;
+      
+      const headerBar = document.getElementById("page-header");
+      if (headerBar) {
+        document.getElementById("header-logo").src = CONFIG.headerBar.logo;
+        document.getElementById("header-logo").alt = CONFIG.headerBar.alt;
+        document.getElementById("header-title").textContent = CONFIG.headerBar.titulo;
+        document.getElementById("header-subtitle").textContent = CONFIG.headerBar.subtitulo;
+      }
+
+      const whatsappURL = `https://wa.me/${CONFIG.telefonoWhatsApp}?text=${encodeURIComponent(CONFIG.mensajeWhatsApp)}`;
+
+      document.getElementById("aside-footer-container").innerHTML = `
+        <div class="social-icons">
+          ${CONFIG.redesSociales.map(r => `<a href="${r.url}" target="_blank" rel="noopener noreferrer"><i class="${r.icon}"></i></a>`).join('')}
+          <a href="${whatsappURL}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i></a>
+        </div>
+        <p><strong>${CONFIG.nombreNegocio}</strong></p>
+        <p style="opacity:0.7">${CONFIG.copyright}</p>
+      `;
+
+      document.getElementById("footer-social-links").innerHTML = `
+        ${CONFIG.redesSociales.map(r => `<a href="${r.url}" target="_blank" rel="noopener noreferrer"><i class="${r.icon}"></i> ${r.label}</a>`).join('')}
+        <a href="${whatsappURL}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+      `;
+      
+      document.getElementById("f-copy").textContent = CONFIG.copyright;
+      document.getElementById("f-loc").textContent = CONFIG.ubicacion;
+      document.getElementById("f-dev").innerHTML = `Desarrollado por <strong>${CONFIG.developer}</strong>`;
+
+      document.getElementById("ollita-animada").href = whatsappURL;
+      
+      const root = document.documentElement;
+      root.style.setProperty('--primary', CONFIG.colores.primario);
+      root.style.setProperty('--primary-dark', CONFIG.colores.primarioOscuro);
+      root.style.setProperty('--accent', CONFIG.colores.acento);
+      document.body.style.background = CONFIG.colores.fondoGradiente;
+
+      document.getElementById("container-badges").innerHTML = CONFIG.badges.map(b => `
+        <div class="badge-card">
+          <i class="bi ${b.icon}"></i>
+          <div class="badge-text">
+            <h4>${b.titulo}</h4>
+            <div>${b.items.map(i => `<span>${i}</span>`).join('')}</div>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    let fotosActuales = [];
+    let indexActual = 0;
+    const contador = document.getElementById("contador-carrito");
+    const modal = document.getElementById("modal-producto");
+    const aside = document.getElementById("aside-menu");
+    const subContainer = document.getElementById("contenedor-filtros-sub");
+    const txtContadorResultados = document.getElementById("contador-resultados");
+
+    window.toggleDescripcion = (id) => {
+      const txt = document.getElementById(`desc-${id}`);
+      const link = document.getElementById(`link-${id}`);
+      txt.classList.toggle('completa');
+      link.textContent = txt.classList.contains('completa') ? "Ver menos" : "Leer más...";
+    };
+
+    window.cambiarFoto = (idx) => {
+      indexActual = idx;
+      const mainImg = document.getElementById("img-modal-principal");
+      mainImg.src = fotosActuales[indexActual];
+      document.querySelectorAll(".thumb").forEach((t, i) => {
+        t.style.borderColor = i === idx ? 'var(--accent)' : '#eee';
+        t.style.opacity = i === idx ? '1' : '0.6';
+      });
+    };
+
+    window.openModalDirectly = (id) => {
+      const p = productos.find(x => x.id === id);
+      if(!p) return;
+      let urls = [p.imagen, ...p.imagenes].filter(u => u);
+      fotosActuales = [...new Set(urls)]; 
+      indexActual = 0;
+      
+      const isAgotado = p.estado === "AGOTADO";
+      
+      document.getElementById("modal-titulo").textContent = p.titulo;
+      document.getElementById("modal-descripcion").textContent = p.descripcion || "Sin descripción disponible.";
+      document.getElementById("modal-precio").textContent = `Q${p.precio.toFixed(2)}`;
+      
+      document.getElementById("modal-badge-estado").innerHTML = `
+        <span class="badge-estado ${isAgotado ? 'estado-agotado' : 'estado-disponible'}">
+            ${isAgotado ? 'Agotado' : 'Disponible'}
+        </span>`;
+
+      const thumbContainer = document.getElementById("modal-thumbnails");
+      thumbContainer.innerHTML = "";
+      fotosActuales.forEach((src, i) => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.className = "thumb";
+        img.style = "width:50px; height:50px; object-fit:contain; border:2px solid #eee; cursor:pointer; border-radius:6px; background:#fff; flex-shrink:0; transition:var(--transition);";
+        img.onclick = (e) => { e.stopPropagation(); window.cambiarFoto(i); };
+        thumbContainer.appendChild(img);
+      });
+      document.getElementById("nav-modal-fotos").style.display = fotosActuales.length > 1 ? "flex" : "none";
+      window.cambiarFoto(0);
+      modal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+
+      const btnModal = document.getElementById("btn-agregar-modal");
+      btnModal.disabled = isAgotado;
+      btnModal.textContent = isAgotado ? "Producto Agotado" : "Agregar al pedido";
+      
+      btnModal.onclick = () => {
+        if (isAgotado) return;
+        addToCart(p);
+        btnModal.classList.add("success-state");
+        btnModal.textContent = "¡Añadido!";
+        setTimeout(() => { cerrarModal(); btnModal.classList.remove("success-state"); }, 600);
+      };
+    };
+
+    function addToCart(p) {
+        const cart = JSON.parse(localStorage.getItem("carrito") || "[]");
+        cart.push(p);
+        localStorage.setItem("carrito", JSON.stringify(cart));
+        updateCart();
+    }
+
+    function updateCart() {
+        const cant = JSON.parse(localStorage.getItem("carrito") || "[]").length;
+        contador.textContent = cant;
+    }
+
+    function procesarYRenderizarCatalogo() {
+      const busquedaCentral = document.getElementById("buscar-producto-central").value.toLowerCase();
+      const criterioOrden = document.getElementById("ordenar-productos").value;
+
+      let resultado = categoriaActualProductos.filter(p => {
+        const cumpleSub = (subcategoriaSeleccionada === "Todas" || p.subcategoria === subcategoriaSeleccionada);
+        const cumpleTxt = p.titulo.toLowerCase().includes(busquedaCentral) || 
+                          p.categoria.nombre.toLowerCase().includes(busquedaCentral) ||
+                          p.descripcion.toLowerCase().includes(busquedaCentral) ||
+                          p.id.toLowerCase().includes(busquedaCentral);
+        return cumpleSub && cumpleTxt;
+      });
+
+      if (criterioOrden === "precio-asc") {
+        resultado.sort((a, b) => a.precio - b.precio);
+      } else if (criterioOrden === "precio-desc") {
+        resultado.sort((a, b) => b.precio - a.precio);
+      } else if (criterioOrden === "alfa-asc") {
+        resultado.sort((a, b) => a.titulo.localeCompare(b.titulo));
+      } else if (criterioOrden === "alfa-desc") {
+        resultado.sort((a, b) => b.titulo.localeCompare(a.titulo));
+      }
+
+      txtContadorResultados.textContent = `Mostrando ${resultado.length} productos`;
+      renderProductos(resultado);
+    }
+
+    function renderProductos(lista) {
+      const contenedor = document.getElementById("contenedor-productos");
+      contenedor.innerHTML = "";
+      if (lista.length === 0) {
+        contenedor.innerHTML = "<p style='text-align:center; grid-column:1/-1; padding:3rem; color:var(--text-soft); font-weight:500;'>No encontramos productos con los criterios indicados.</p>";
+        return;
+      }
+      lista.forEach(p => {
+        const isAgotado = p.estado === "AGOTADO";
+        const div = document.createElement("div");
+        div.className = "producto";
+        div.innerHTML = `
+          <div class="imagen-contenedor" onclick="window.openModalDirectly('${p.id}')">
+            <img src="${p.imagen}" alt="${p.titulo}" loading="lazy">
+          </div>
+          <div class="contenido">
+            <h3>${p.titulo}</h3>
+            <div class="descripcion-container">
+                <p class="descripcion-texto" id="desc-${p.id}">${p.descripcion}</p>
+                ${p.descripcion && p.descripcion.length > 40 ? `<span class="link-leer-mas" id="link-${p.id}" onclick="window.toggleDescripcion('${p.id}')">Leer más...</span>` : ''}
+            </div>
+            <span class="badge-estado ${isAgotado ? 'estado-agotado' : 'estado-disponible'}">
+                ${isAgotado ? 'Agotado' : 'Disponible'}
+            </span>
+            <p class="precio">Q${p.precio.toFixed(2)}</p>
+            <button class="btn-add" data-id="${p.id}" ${isAgotado ? 'disabled' : ''}>
+                <i class="bi bi-bag-plus"></i> ${isAgotado ? 'Agotado' : 'Agregar'}
+            </button>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+
+      document.querySelectorAll(".btn-add").forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const p = productos.find(x => x.id === btn.dataset.id);
+          addToCart(p);
+          btn.classList.add("success-state");
+          btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> ¡Listo!';
+          setTimeout(() => { btn.classList.remove("success-state"); btn.innerHTML = '<i class="bi bi-bag-plus"></i> Agregar'; }, 900);
+        };
+      });
+    }
+
+    function generarSubfiltros(listaOriginalDeCat) {
+        subContainer.innerHTML = "";
+        subcategoriaSeleccionada = "Todas";
+        const subcats = [...new Set(listaOriginalDeCat.map(p => p.subcategoria).filter(s => s))].sort();
+        if (subcats.length > 0) {
+            const btnAll = document.createElement("button");
+            btnAll.className = "btn-subfiltro activo";
+            btnAll.textContent = "Todas";
+            btnAll.onclick = () => {
+                document.querySelectorAll(".btn-subfiltro").forEach(b => b.classList.remove("activo"));
+                btnAll.classList.add("activo");
+                subcategoriaSeleccionada = "Todas";
+                procesarYRenderizarCatalogo();
+            };
+            subContainer.appendChild(btnAll);
+            
+            subcats.forEach(sc => {
+                const btn = document.createElement("button");
+                btn.className = "btn-subfiltro";
+                btn.textContent = sc;
+                btn.onclick = () => {
+                    document.querySelectorAll(".btn-subfiltro").forEach(b => b.classList.remove("activo"));
+                    btn.classList.add("activo");
+                    subcategoriaSeleccionada = sc;
+                    procesarYRenderizarCatalogo();
+                };
+                subContainer.appendChild(btn);
+            });
+        }
+    }
+
+    function limpiarFiltrosYResetear() {
+      document.getElementById("buscar-producto-central").value = "";
+      document.getElementById("buscar-categoria").value = "";
+      document.getElementById("ordenar-productos").value = "predeterminado";
+      subContainer.innerHTML = "";
+      categoriaActualProductos = [...productos];
+      subcategoriaSeleccionada = "Todas";
+      procesarYRenderizarCatalogo();
+      document.querySelector("main").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function iniciarApp() {
+        const menuCat = document.getElementById("menu-categorias");
+        menuCat.innerHTML = "";
+
+        const btnVerTodos = document.createElement("button");
+        btnVerTodos.className = "boton-categoria btn-ver-todo";
+        btnVerTodos.innerHTML = `<i class="bi bi-grid-fill"></i> MOSTRAR TODO`;
+        btnVerTodos.onclick = () => {
+            limpiarFiltrosYResetear();
+            aside.classList.remove("abierto");
+        };
+        menuCat.appendChild(btnVerTodos);
+
+        const cats = [...new Set(productos.map(p => p.categoria.id))].sort();
+        cats.forEach(cId => {
+            const pDeCat = productos.filter(p => p.categoria.id === cId);
+            const btn = document.createElement("button");
+            btn.className = "boton-categoria";
+            btn.textContent = pDeCat[0].categoria.nombre.toUpperCase();
+            btn.onclick = () => { 
+                document.getElementById("buscar-producto-central").value = "";
+                categoriaActualProductos = pDeCat;
+                subcategoriaSeleccionada = "Todas";
+                generarSubfiltros(pDeCat);
+                procesarYRenderizarCatalogo(); 
+                aside.classList.remove("abierto"); 
+                document.getElementById("contenedor-productos").scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+            menuCat.appendChild(btn);
+        });
+
+        categoriaActualProductos = [...productos];
+        procesarYRenderizarCatalogo();
+        updateCart();
+    }
+
+    function cerrarModal() { modal.style.display = "none"; document.body.style.overflow = "auto"; }
+    modal.onclick = (e) => { if(e.target === modal) cerrarModal(); };
+    document.getElementById("cerrar-modal-btn").onclick = cerrarModal;
+    
+    document.getElementById("prev-foto").onclick = (e) => { 
+      e.stopPropagation();
+      indexActual = (indexActual - 1 + fotosActuales.length) % fotosActuales.length; 
+      window.cambiarFoto(indexActual); 
+    };
+    document.getElementById("next-foto").onclick = (e) => { 
+      e.stopPropagation();
+      indexActual = (indexActual + 1) % fotosActuales.length; 
+      window.cambiarFoto(indexActual); 
+    };
+
+    document.getElementById("toggle-menu").onclick = () => aside.classList.add("abierto");
+    document.getElementById("cerrar-menu").onclick = () => aside.classList.remove("abierto");
+
+    document.getElementById("buscar-producto-central").oninput = () => procesarYRenderizarCatalogo();
+    document.getElementById("ordenar-productos").onchange = () => procesarYRenderizarCatalogo();
+    document.getElementById("btn-limpiar-filtros").onclick = () => limpiarFiltrosYResetear();
+
+    document.getElementById("buscar-categoria").oninput = (e) => {
+      const val = e.target.value.toLowerCase();
+      document.getElementById("buscar-producto-central").value = val;
+      subContainer.innerHTML = ""; 
+      subcategoriaSeleccionada = "Todas";
+      procesarYRenderizarCatalogo();
+    };
+
+    aplicarConfig();
+    cargarDatos();
+  </script>
+</body>
+</html>
