@@ -134,9 +134,9 @@
 
 <div class="container">
     <div class="brand-header">
-        <img src="img/GuateCocina.png" id="js-brand-logo" alt="Logo" class="brand-logo">
+        <img src="img/Flamax-v1.png" id="js-brand-logo" alt="Logo" class="brand-logo">
         <div style="text-align: right">
-            <h1 id="js-brand-name" style="margin:0; font-size: 1.6rem; color: var(--dark);">GuateCocina</h1>
+            <h1 id="js-brand-name" style="margin:0; font-size: 1.6rem; color: var(--dark);">Flamax</h1>
             <small id="js-brand-tagline" style="font-weight: 700; text-transform: uppercase; font-size: 0.7rem;">GESTIÓN DE INVENTARIOS V1.0</small>
         </div>
     </div>
@@ -253,10 +253,10 @@
 
 <script>
     const CONFIG = {
-        brandName: "GuateCocina",
+        brandName: "Flamax  ",
         tagline: "Sistema de Gestión de Inventarios v1.0 | Powered by TECH® | RdeG | 2026",
-        logoUrl: "img/GuateCocina.png",
-        favicon: "img/GuateCocina.ico", 
+        logoUrl: "img/Flamax-v1.png",
+        favicon: "img/Flamax-v1.ico", 
         color_primary: "#F47C20", 
         color_dark: "#1C3F60",    
         color_info: "#0074B7",    
@@ -296,14 +296,7 @@
     };
 
     async function inicializarCache() {
-        try {
-            const respuesta = await fetch('data/mis_imagenes.json');
-            if (!respuesta.ok) throw new Error("No se pudo cargar el archivo");
-            cacheDeImagenes = await respuesta.json();
-            console.log("Imágenes cargadas localmente en memoria con éxito.");
-        } catch (e) {
-            console.error("Aviso: Error al leer data/mis_imagenes.json. Se utilizarán placeholders.", e);
-        }
+        cacheDeImagenes = {};
     }
 
     // FLUJO UNIFICADO DE INICIALIZACIÓN
@@ -576,19 +569,36 @@
         const doc = new jsPDF('l', 'mm', 'a4');
         const btn = document.querySelector('.btn-pdf');
         const originalText = btn.innerHTML;
-        btn.disabled = true; 
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Preparando PDF...';
-        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Cargando imágenes (0/' + productosFiltrados.length + ')...';
+
         try {
-            const logoBase64 = await getBase64(CONFIG.logoUrl);
-            
-            // Llenado asíncrono y obligatorio del mapa contra CORS
-            for (let p of productosFiltrados) {
-                if (!_imgCache.has(p.imagen)) {
-                    const base64 = await getBase64(p.imagen);
-                    _imgCache.set(p.imagen, base64);
-                }
+            // Descargar logo + todas las imágenes EN PARALELO (mucho más rápido)
+            let cargadas = 0;
+            const total = productosFiltrados.length;
+
+            const fetchConProgreso = async (url) => {
+                const b64 = await getBase64(url);
+                cargadas++;
+                btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Cargando imágenes (' + cargadas + '/' + total + ')...';
+                return b64;
+            };
+
+            // Limitar concurrencia a 10 para no saturar el Apps Script
+            const BATCH = 10;
+            const urls = productosFiltrados.map(p => p.imagen);
+            const resultados = [];
+            for (let i = 0; i < urls.length; i += BATCH) {
+                const lote = urls.slice(i, i + BATCH);
+                const b64s = await Promise.all(lote.map(url => {
+                    if (_imgCache.has(url)) { cargadas++; btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Cargando imágenes (' + cargadas + '/' + total + ')...'; return Promise.resolve(_imgCache.get(url)); }
+                    return fetchConProgreso(url).then(b => { _imgCache.set(url, b); return b; });
+                }));
+                resultados.push(...b64s);
             }
+
+            const logoBase64 = await getBase64(CONFIG.logoUrl);
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generando PDF...';
             
             if(logoBase64 && logoBase64 !== PLACEHOLDER_BASE64 && logoBase64.startsWith('data:image')) {
                 doc.addImage(logoBase64, 'JPEG', 15, 8, 22, 22);
@@ -614,8 +624,8 @@
                 startY: 35,
                 didDrawCell: (data) => {
                     if (data.section === 'body' && data.column.index === 0) {
-                        const originalUrl = productosFiltrados[data.row.index].imagen;
-                        const imgData = _imgCache.get(originalUrl);
+                        const originalUrl = productosFiltrados[data.row.index]?.imagen;
+                        const imgData = originalUrl ? (resultados[data.row.index] || _imgCache.get(originalUrl)) : null;
                         if (imgData && imgData.startsWith('data:image') && imgData !== PLACEHOLDER_BASE64) {
                             try {
                                 doc.addImage(imgData, 'JPEG', data.cell.x + 2, data.cell.y + 2, 11, 11);

@@ -124,11 +124,11 @@
 
 <script>
     const COMERCIAL_CONFIG = {
-        tituloPagina: "Social Ads HD Pro | GuateCocina",
-        favicon: "/img/GuateCocina.ico",
+        tituloPagina: "Social Ads HD Pro | Flamax",
+        favicon: "/img/Flamax-v1.ico",
         nombreHeader: "MARKETING TOOL HD",
         tagline: "EKIPRO Business",
-        logoParaImagen: "/img/GuateCocina.png",
+        logoParaImagen: "/img/Flamax-v1.png",
         csvDefault: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwVpHIAUk9o5t1bGr2TEn7TcSLvf_XGbX2-9irqECUDFHgdm_TjSSifw4VDKHTfMiX-dZmNz6cqXk_/pub?output=csv",
         colorDefault: "#007BC4",
         hashtagsBase: "#Guatemala #Ventas #TiendaOnline #EnviosGuate #PagoContraEntrega #Ofertas #CocinaGuatemala #Restaurantes #Hoteles #Comedores #Bar #Bares"
@@ -232,8 +232,8 @@
         const hashtagsRelacionados = `${extraTags} #Guatemala #Ventas #TiendaOnline #EnviosGuate #PagoContraEntrega #MarketplaceGT #EKIPRO`;
 
         document.getElementById('copyTextArea').value = 
-            `📌 TÍTULO MARKETPLACE:\n${tituloMP}\n\n` +
-            `⭐ ¡${p.tituloGancho.toUpperCase()}! ⭐\n\n🔹 ${p.tituloDisplay.toUpperCase()}\n\n📝 DESCRIPCIÓN:\n${p.desc}\n\n🚚 ENVÍOS A TODA GUATEMALA 🇬🇹\n💳 PAGOS: Efectivo, Transferencia y VISA.\n*(Aplican restricciones)\n\n🛒 COMPRA AQUÍ: ${userWeb}\n📲 WHATSAPP: ${waLink}\n\n${hashtagsRelacionados}`;
+            `📌FLAMAX:\n${tituloMP}\n\n` +
+            `⭐¡${p.tituloGancho.toUpperCase()}! ⭐\n\n🔹 ${p.tituloDisplay.toUpperCase()}\n\n📝 DESCRIPCIÓN:\n${p.desc}\n\n🚚 ENVÍOS A TODA GUATEMALA 🇬🇹\n💳 PAGOS: Efectivo, Transferencia y VISA.\n*(Aplican restricciones)\n\n🛒 COMPRA AQUÍ: ${userWeb}\n📲 WHATSAPP: ${waLink}\n\n${hashtagsRelacionados}`;
     }
 
     async function renderizarPublicidad() {

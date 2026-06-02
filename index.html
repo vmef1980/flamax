@@ -55,7 +55,7 @@
     }
 
     img { -webkit-user-drag: none; pointer-events: none; }
-    input, button, select, .boton-categoria, .link-leer-mas, #carrito-float, .thumb, .nav-modal button, .btn-subfiltro, a, #ollita-animada {
+    input, button, select, .boton-categoria, .link-leer-mas, #carrito-float, #btn-volver-float, .thumb, .nav-modal button, .btn-subfiltro, a, #ollita-animada {
       pointer-events: auto !important;
     }
 
@@ -206,7 +206,36 @@
     .foto-principal { max-width: 90%; max-height: 90%; object-fit: contain; }
 
     #carrito-float { position: fixed; right: 1rem; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 999; bottom: 80px; background: var(--highlight); color: var(--text-dark); font-size: 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .cerrar-modal { position: absolute; top: 1rem; right: 1rem; background: #f1f3f5; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
+    /* 👇 NUEVO DISEÑO PREMIUM: EN CAPSULA, CENTRADO TOTALMENTE E INTELIGENTE */
+    #btn-volver-float { 
+      position: fixed; 
+      left: 50%; 
+      bottom: 80px; 
+      transform: translateX(-50%) scale(0.7) translateY(15px);
+      padding: 0.7rem 1.4rem;
+      border-radius: 30px; 
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      text-decoration: none; z-index: 999; 
+      background: var(--primary); color: white; 
+      font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 55, 114, 0.35); 
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+      cursor: pointer;
+    }
+    #btn-volver-float.visible {
+      opacity: 1; visibility: visible; transform: translateX(-50%) scale(1) translateY(0);
+    }
+    #btn-volver-float:hover { 
+      background: var(--accent);
+      transform: translateX(-50%) scale(1.05); 
+      box-shadow: 0 12px 35px rgba(0, 116, 183, 0.4);
+    }
+    #btn-volver-float:active { transform: translateX(-50%) scale(0.95); }
+
+    #cerrar-modal  { position: absolute; top: 1rem; right: 1rem; background: #f1f3f5; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
     #ollita-animada {
       position: fixed; top: 45%; right: 0; width: 64px; z-index: 9999; cursor: pointer;
@@ -238,6 +267,8 @@
       .btn-add { padding: 0.65rem; font-size: 0.85rem; }
       #header-subtitle { display: none; }
       #titulo-principal { font-size: 1.7rem; }
+      /* En móviles lo subimos un pelín por encima del footer fijo */
+      #btn-volver-float { bottom: 75px; font-size: 0.8rem; padding: 0.65rem 1.2rem; }
     }
   </style>
 </head>
@@ -315,6 +346,11 @@
     </div>
   </footer>
 
+  <button id="btn-volver-float" aria-label="Regresar al inicio">
+    <i class="bi bi-arrow-clockwise"></i>
+    <span>Regresar al Inicio</span>
+  </button>
+
   <a href="carrito.html" id="carrito-float" aria-label="Ir al carrito">
     <i class="bi bi-cart-fill"></i>
     <span id="contador-carrito" style="position:absolute; top:-2px; right:-2px; background:var(--danger); color:white; width:20px; height:20px; border-radius:50%; font-size:0.65rem; display:flex; align-items:center; justify-content:center; border:2px solid white; font-weight:bold;">0</span>
@@ -375,6 +411,7 @@
         primario: "#003772",
         primarioOscuro: "#9fc5e8",
         acento: "#0074B7",
+        highlight: "#FFD447",
         fondoGradiente: "linear-gradient(135deg, #fff8f0 0%, #e6f7ff 100%)"
       },
       redesSociales: [
@@ -461,6 +498,9 @@
     const aplicarConfig = () => {
       document.title = CONFIG.tituloPagina; 
       document.getElementById("page-title").textContent = CONFIG.tituloPagina;
+      
+      document.head.appendChild(Object.assign(document.createElement('link'), { rel: 'icon', href: CONFIG.faviconImg }));
+
       document.getElementById("meta-desc").content = CONFIG.metaDescripcion;
       document.getElementById("meta-og-title").content = CONFIG.tituloPagina;
       document.getElementById("meta-og-description").content = CONFIG.metaDescripcion;
@@ -496,7 +536,7 @@
       
       document.getElementById("f-copy").textContent = CONFIG.copyright;
       document.getElementById("f-loc").textContent = CONFIG.ubicacion;
-      document.getElementById("f-dev").innerHTML = `Desarrollado por <strong>${CONFIG.developer}</strong>`;
+      document.getElementById("f-dev").innerHTML = `Desarrollado por <strong><a href="https://links.rompecabezas.online" target="_blank">${CONFIG.developer}</a></strong>`;
 
       document.getElementById("ollita-animada").href = whatsappURL;
       
@@ -524,6 +564,7 @@
     const aside = document.getElementById("aside-menu");
     const subContainer = document.getElementById("contenedor-filtros-sub");
     const txtContadorResultados = document.getElementById("contador-resultados");
+    const btnVolverFloat = document.getElementById("btn-volver-float");
 
     window.toggleDescripcion = (id) => {
       const txt = document.getElementById(`desc-${id}`);
@@ -711,7 +752,6 @@
       categoriaActualProductos = [...productos];
       subcategoriaSeleccionada = "Todas";
       procesarYRenderizarCatalogo();
-      document.querySelector("main").scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function iniciarApp() {
@@ -724,6 +764,7 @@
         btnVerTodos.onclick = () => {
             limpiarFiltrosYResetear();
             aside.classList.remove("abierto");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         menuCat.appendChild(btnVerTodos);
 
@@ -770,7 +811,11 @@
 
     document.getElementById("buscar-producto-central").oninput = () => procesarYRenderizarCatalogo();
     document.getElementById("ordenar-productos").onchange = () => procesarYRenderizarCatalogo();
-    document.getElementById("btn-limpiar-filtros").onclick = () => limpiarFiltrosYResetear();
+    
+    document.getElementById("btn-limpiar-filtros").onclick = () => {
+      limpiarFiltrosYResetear();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     document.getElementById("buscar-categoria").oninput = (e) => {
       const val = e.target.value.toLowerCase();
@@ -778,6 +823,21 @@
       subContainer.innerHTML = ""; 
       subcategoriaSeleccionada = "Todas";
       procesarYRenderizarCatalogo();
+    };
+
+    // 👇 LOGICA DE VISIBILIDAD DE SCROLL PARA LA CAPSULA DE INICIO
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 400) {
+        btnVolverFloat.classList.add("visible");
+      } else {
+        btnVolverFloat.classList.remove("visible");
+      }
+    });
+
+    // ACCIÓN SMART: Al pulsarlo limpia filtros y sube de manera ultra fluida
+    btnVolverFloat.onclick = () => {
+      limpiarFiltrosYResetear();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     aplicarConfig();
