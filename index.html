@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
-  <meta name="robots" content="index, follow, noimageindex" />
-  <meta name="theme-color" id="meta-theme-color" content="#003772" />
   
-  <title id="page-title">Cargando Catálogo de Productos...</title>
+  <!-- <meta name="robots" content="index, follow, noimageindex" /> --> 
+  <meta name="robots" content="index, follow" />
+
+  <meta name="theme-color" id="meta-theme-color" content="#003772" />
+    <title id="page-title">Cargando Catálogo de Productos...</title>
   <meta name="description" id="meta-desc" content="Catálogo oficial de suministros para cocinas, restaurantes, hoteles y bares en Guatemala." />
   <meta property="og:type" content="website" id="meta-og-type" />
   <meta property="og:title" content="Flamax | Catálogo de Productos" id="meta-og-title" />
@@ -27,12 +29,18 @@
 
   <style>
     :root {
+      /* ── Paleta Flamax ── edita aquí para cambiar colores en todo el sitio */
       --primary: #003772;
       --primary-dark: #9fc5e8;
-      --success: #28a745;
-      --danger: #dc3545;
       --accent: #0074B7;
       --highlight: #FFD447;
+      --fondo-gradiente: linear-gradient(135deg, #fff8f0 0%, #e6f7ff 100%);
+
+      /* ── Semánticos ── */
+      --success: #28a745;
+      --danger: #dc3545;
+
+      /* ── Tipografía y estructura ── */
       --text-dark: #1C3F60;
       --text-soft: #666;
       --border: rgba(0,0,0,0.08);
@@ -45,7 +53,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
       font-family: 'Inter', sans-serif; 
-      background: linear-gradient(135deg, #fff8f0 0%, #e6f7ff 100%); 
+      background: var(--fondo-gradiente);
       color: var(--text-dark); 
       line-height: 1.6; 
       min-height: 100vh;
@@ -158,7 +166,47 @@
     .btn-subfiltro { padding: 0.5rem 1rem; background: #f1f3f5; border: 1px solid transparent; border-radius: 25px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: var(--transition); white-space: nowrap; color: var(--text-dark); }
     .btn-subfiltro.activo { background: var(--accent); color: white; box-shadow: 0 3px 8px rgba(0, 116, 183, 0.2); }
 
-    #contenedor-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .filtros-disponibilidad { display: flex; gap: 8px; margin-top: 0.6rem; flex-wrap: wrap; }
+    .btn-disponibilidad { padding: 0.45rem 1rem; border-radius: 25px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: var(--transition); white-space: nowrap; border: 1.5px solid transparent; background: #f1f3f5; color: var(--text-dark); display: flex; align-items: center; gap: 5px; }
+    .btn-disponibilidad.activo-todo { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-disponibilidad.activo-disponible { background: #e8f5e9; color: var(--success); border-color: var(--success); }
+    .btn-disponibilidad.activo-agotado { background: #ffebee; color: var(--danger); border-color: var(--danger); }
+    .btn-disponibilidad:hover:not(.activo-todo):not(.activo-disponible):not(.activo-agotado) { background: #e2e6ea; }
+
+    #contenedor-productos { display: block; margin-bottom: 2rem; }
+
+    .seccion-categoria { margin-bottom: 1.5rem; background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .seccion-categoria-header {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 1rem 1.2rem; cursor: pointer;
+      user-select: none; -webkit-user-select: none;
+      transition: background 0.2s ease;
+    }
+    .seccion-categoria-header:hover { background: #f8f9fa; }
+    .seccion-categoria-header h2 {
+      font-size: 1rem; font-weight: 800; color: var(--primary); flex: 1; margin: 0;
+    }
+    .cat-badge {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px;
+      background: var(--primary); color: white; border-radius: 20px; white-space: nowrap; opacity: 0.85;
+    }
+    .cat-chevron {
+      font-size: 1rem; color: var(--text-soft);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      flex-shrink: 0;
+    }
+    .seccion-categoria.colapsada .cat-chevron { transform: rotate(-90deg); }
+    .cat-body {
+      display: grid; grid-template-rows: 1fr;
+      transition: grid-template-rows 0.35s cubic-bezier(0.4,0,0.2,1);
+      border-top: 1px solid var(--border);
+    }
+    .seccion-categoria.colapsada .cat-body { grid-template-rows: 0fr; border-top-color: transparent; }
+    .cat-body-inner { overflow: hidden; }
+    .grid-categoria {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem;
+      padding: 1.2rem;
+    }
     
     .producto { background: white; border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; transition: var(--transition); overflow: hidden; position: relative; }
     .producto:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
@@ -275,7 +323,7 @@
       .visor-principal { height: 240px; }
       .seccion-busqueda-orden { flex-direction: column; align-items: stretch; gap: 0.5rem; }
       .select-ordenar-moderno { width: 100%; }
-      #contenedor-productos { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .grid-categoria { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; padding: 0.75rem; }
       .contenido { padding: 0.75rem; gap: 0.3rem; }
       .producto h3 { font-size: 0.85rem; min-height: 2.4rem; }
       .descripcion-container { display: none; }
@@ -344,6 +392,17 @@
         </div>
       </div>
       <div class="contador-resultados" id="contador-resultados">Cargando existencias...</div>
+      <div class="filtros-disponibilidad">
+        <button class="btn-disponibilidad activo-todo" id="filtro-todos" onclick="setFiltroDisponibilidad('todos')">
+          <i class="bi bi-grid"></i> Todos
+        </button>
+        <button class="btn-disponibilidad" id="filtro-disponibles" onclick="setFiltroDisponibilidad('disponibles')">
+          <i class="bi bi-check-circle"></i> Disponibles
+        </button>
+        <button class="btn-disponibilidad" id="filtro-agotados" onclick="setFiltroDisponibilidad('agotados')">
+          <i class="bi bi-x-circle"></i> Agotados
+        </button>
+      </div>
       <div id="contenedor-filtros-sub"></div>
     </div>
 
@@ -423,11 +482,11 @@
       },
       csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwVpHIAUk9o5t1bGr2TEn7TcSLvf_XGbX2-9irqECUDFHgdm_TjSSifw4VDKHTfMiX-dZmNz6cqXk_/pub?output=csv",
       colores: {
-        primario: "#003772",
-        primarioOscuro: "#9fc5e8",
-        acento: "#0074B7",
-        highlight: "#FFD447",
-        fondoGradiente: "linear-gradient(135deg, #fff8f0 0%, #e6f7ff 100%)"
+        primario: "var(--primary)",
+        primarioOscuro: "var(--primary-dark)",
+        acento: "var(--accent)",
+        highlight: "var(--highlight)",
+        fondoGradiente: "var(--fondo-gradiente)"
       },
       redesSociales: [
         { icon: "bi-facebook", url: "#", label: "Facebook" },
@@ -451,6 +510,7 @@
     let productos = [];
     let categoriaActualProductos = [];
     let subcategoriaSeleccionada = "Todas";
+    let filtroDisponibilidad = "todos";
 
     function parsearCSV(texto) {
         const lineas = [];
@@ -555,11 +615,6 @@
 
       document.getElementById("ollita-animada").href = whatsappURL;
       
-      const root = document.documentElement;
-      root.style.setProperty('--primary', CONFIG.colores.primario);
-      root.style.setProperty('--primary-dark', CONFIG.colores.primarioOscuro);
-      root.style.setProperty('--accent', CONFIG.colores.acento);
-      document.body.style.background = CONFIG.colores.fondoGradiente;
 
       document.getElementById("container-badges").innerHTML = CONFIG.badges.map(b => `
         <div class="badge-card">
@@ -656,6 +711,14 @@
         contador.textContent = cant;
     }
 
+    window.setFiltroDisponibilidad = (filtro) => {
+      filtroDisponibilidad = filtro;
+      document.getElementById("filtro-todos").className = "btn-disponibilidad" + (filtro === "todos" ? " activo-todo" : "");
+      document.getElementById("filtro-disponibles").className = "btn-disponibilidad" + (filtro === "disponibles" ? " activo-disponible" : "");
+      document.getElementById("filtro-agotados").className = "btn-disponibilidad" + (filtro === "agotados" ? " activo-agotado" : "");
+      procesarYRenderizarCatalogo();
+    };
+
     function procesarYRenderizarCatalogo() {
       const busquedaCentral = document.getElementById("buscar-producto-central").value.toLowerCase();
       const criterioOrden = document.getElementById("ordenar-productos").value;
@@ -666,7 +729,11 @@
                           p.categoria.nombre.toLowerCase().includes(busquedaCentral) ||
                           p.descripcion.toLowerCase().includes(busquedaCentral) ||
                           p.id.toLowerCase().includes(busquedaCentral);
-        return cumpleSub && cumpleTxt;
+        const isAgotado = p.estado === "AGOTADO";
+        const cumpleDisponibilidad = filtroDisponibilidad === "todos" ||
+                                     (filtroDisponibilidad === "disponibles" && !isAgotado) ||
+                                     (filtroDisponibilidad === "agotados" && isAgotado);
+        return cumpleSub && cumpleTxt && cumpleDisponibilidad;
       });
 
       if (criterioOrden === "precio-asc") {
@@ -683,38 +750,94 @@
       renderProductos(resultado);
     }
 
+    function crearCardProducto(p) {
+      const isAgotado = p.estado === "AGOTADO";
+      const div = document.createElement("div");
+      div.className = "producto";
+      div.innerHTML = `
+        <div class="imagen-contenedor" onclick="window.openModalDirectly('${p.id}')">
+          <img src="${p.imagen}" alt="${p.titulo}" loading="lazy">
+        </div>
+        <div class="contenido">
+          <h3>${p.titulo}</h3>
+          <div class="descripcion-container">
+              <p class="descripcion-texto" id="desc-${p.id}">${p.descripcion}</p>
+              ${p.descripcion && p.descripcion.length > 40 ? `<span class="link-leer-mas" id="link-${p.id}" onclick="window.toggleDescripcion('${p.id}')">Leer más...</span>` : ''}
+          </div>
+          <span class="badge-estado ${isAgotado ? 'estado-agotado' : 'estado-disponible'}">
+              ${isAgotado ? 'Agotado' : 'Disponible'}
+          </span>
+          <p class="precio">Q${p.precio.toFixed(2)}</p>
+          <button class="btn-add" data-id="${p.id}" ${isAgotado ? 'disabled' : ''}>
+              <i class="bi bi-bag-plus"></i> ${isAgotado ? 'Agotado' : 'Agregar'}
+          </button>
+        </div>
+      `;
+      return div;
+    }
+
     function renderProductos(lista) {
       const contenedor = document.getElementById("contenedor-productos");
       contenedor.innerHTML = "";
+
       if (lista.length === 0) {
-        contenedor.innerHTML = "<p style='text-align:center; grid-column:1/-1; padding:3rem; color:var(--text-soft); font-weight:500;'>No encontramos productos con los criterios indicados.</p>";
+        contenedor.innerHTML = "<p style='text-align:center; padding:3rem; color:var(--text-soft); font-weight:500;'>No encontramos productos con los criterios indicados.</p>";
         return;
       }
-      lista.forEach(p => {
-        const isAgotado = p.estado === "AGOTADO";
-        const div = document.createElement("div");
-        div.className = "producto";
-        div.innerHTML = `
-          <div class="imagen-contenedor" onclick="window.openModalDirectly('${p.id}')">
-            <img src="${p.imagen}" alt="${p.titulo}" loading="lazy">
-          </div>
-          <div class="contenido">
-            <h3>${p.titulo}</h3>
-            <div class="descripcion-container">
-                <p class="descripcion-texto" id="desc-${p.id}">${p.descripcion}</p>
-                ${p.descripcion && p.descripcion.length > 40 ? `<span class="link-leer-mas" id="link-${p.id}" onclick="window.toggleDescripcion('${p.id}')">Leer más...</span>` : ''}
-            </div>
-            <span class="badge-estado ${isAgotado ? 'estado-agotado' : 'estado-disponible'}">
-                ${isAgotado ? 'Agotado' : 'Disponible'}
-            </span>
-            <p class="precio">Q${p.precio.toFixed(2)}</p>
-            <button class="btn-add" data-id="${p.id}" ${isAgotado ? 'disabled' : ''}>
-                <i class="bi bi-bag-plus"></i> ${isAgotado ? 'Agotado' : 'Agregar'}
-            </button>
-          </div>
-        `;
-        contenedor.appendChild(div);
-      });
+
+      // Vista general (sin filtro de categoría): agrupar por categoría
+      const esTodo = categoriaActualProductos.length === productos.length
+        && subcategoriaSeleccionada === "Todas"
+        && document.getElementById("buscar-producto-central").value.trim() === "";
+
+      if (esTodo) {
+        const porCategoria = {};
+        lista.forEach(p => {
+          const key = p.categoria.id;
+          if (!porCategoria[key]) porCategoria[key] = { nombre: p.categoria.nombre, items: [] };
+          porCategoria[key].items.push(p);
+        });
+
+        Object.values(porCategoria).forEach((cat, idx) => {
+          const seccion = document.createElement("div");
+          // Primera categoría expandida, el resto colapsadas en móvil
+          const isMobile = window.innerWidth < 768;
+          seccion.className = "seccion-categoria" + (isMobile && idx > 0 ? " colapsada" : "");
+
+          const header = document.createElement("div");
+          header.className = "seccion-categoria-header";
+          header.setAttribute("role", "button");
+          header.setAttribute("aria-expanded", isMobile && idx > 0 ? "false" : "true");
+          header.innerHTML = `
+            <h2><i class="bi bi-tag-fill" style="font-size:0.8rem; opacity:0.5; margin-right:6px;"></i>${cat.nombre}</h2>
+            <span class="cat-badge">${cat.items.length} producto${cat.items.length !== 1 ? 's' : ''}</span>
+            <i class="bi bi-chevron-down cat-chevron"></i>
+          `;
+          header.addEventListener("click", () => {
+            const colapsada = seccion.classList.toggle("colapsada");
+            header.setAttribute("aria-expanded", String(!colapsada));
+          });
+          seccion.appendChild(header);
+
+          const body = document.createElement("div");
+          body.className = "cat-body";
+          const inner = document.createElement("div");
+          inner.className = "cat-body-inner";
+          const grid = document.createElement("div");
+          grid.className = "grid-categoria";
+          cat.items.forEach(p => grid.appendChild(crearCardProducto(p)));
+          inner.appendChild(grid);
+          body.appendChild(inner);
+          seccion.appendChild(body);
+          contenedor.appendChild(seccion);
+        });
+      } else {
+        // Vista filtrada: grid plano sin segmentación
+        const grid = document.createElement("div");
+        grid.className = "grid-categoria";
+        lista.forEach(p => grid.appendChild(crearCardProducto(p)));
+        contenedor.appendChild(grid);
+      }
 
       document.querySelectorAll(".btn-add").forEach(btn => {
         btn.onclick = (e) => {
@@ -766,7 +889,7 @@
       subContainer.innerHTML = "";
       categoriaActualProductos = [...productos];
       subcategoriaSeleccionada = "Todas";
-      procesarYRenderizarCatalogo();
+      window.setFiltroDisponibilidad("todos");
     }
 
     function iniciarApp() {

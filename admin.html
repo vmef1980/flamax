@@ -71,6 +71,7 @@
         .btn-excel { background: #1D6F42; }
         .btn-pdf { background: #E03131; }
         .btn-img { background: #6366f1; }
+        .btn-catalogo { background: var(--dark); }
         .select-grid { padding: 8px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 700; color: var(--dark); }
 
         #search-results-tag { display: inline-block; margin-top: 10px; font-size: 0.85rem; font-weight: 600; color: var(--info); padding: 4px 12px; background: #e0f2fe; border-radius: 8px; }
@@ -228,6 +229,12 @@
             <button class="btn-export btn-img" onclick="exportarImagen()"><i class="bi bi-image"></i> Exportar Imágenes</button>
             <button class="btn-export btn-excel" onclick="exportarExcel()"><i class="bi bi-file-earmark-excel"></i> Excel</button>
             <button class="btn-export btn-pdf" onclick="exportarPDF()"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+            <select id="catalogGridSelect" class="select-grid">
+                <option value="4" selected>4 por página (2x2)</option>
+                <option value="6">6 por página (2x3)</option>
+                <option value="9">9 por página (3x3)</option>
+            </select>
+            <button class="btn-export btn-catalogo" onclick="exportarCatalogoRevista()"><i class="bi bi-journal-richtext"></i> Exportar Catálogo</button>
         </div>
 
         <span id="search-results-tag">Esperando búsqueda...</span>
@@ -279,7 +286,27 @@
         if (!url) return PLACEHOLDER_BASE64;
         if (_imgCache.has(url)) return _imgCache.get(url);
 
-        // Intentar via Apps Script proxy (funciona con Drive y cualquier URL)
+        // Si es una URL local/relativa (logo del proyecto, etc.), cargarla directo
+        const esRemota = /^https?:\/\//i.test(url);
+        if (!esRemota) {
+            try {
+                const resp = await fetch(url);
+                if (resp.ok) {
+                    const blob = await resp.blob();
+                    const b64 = await new Promise((res, rej) => {
+                        const reader = new FileReader();
+                        reader.onload = () => res(reader.result);
+                        reader.onerror = rej;
+                        reader.readAsDataURL(blob);
+                    });
+                    _imgCache.set(url, b64);
+                    return b64;
+                }
+            } catch(e) {}
+            return PLACEHOLDER_BASE64;
+        }
+
+        // Intentar via Apps Script proxy (funciona con Drive y cualquier URL remota)
         try {
             const endpoint = CONFIG.SCRIPT_URL + "?action=getImage&url=" + encodeURIComponent(url);
             const resp = await fetch(endpoint);
@@ -644,6 +671,316 @@
         } finally { 
             btn.disabled = false; 
             btn.innerHTML = originalText; 
+        }
+    }
+
+    // ============================================================
+    // EXPORTAR CATÁLOGO TIPO REVISTA (PDF) - Agrupado por categoría/subcategoría
+    // ============================================================
+    async function exportarCatalogoRevista() {
+        const btn = document.querySelector('.btn-catalogo');
+        const originalText = btn.innerHTML;
+        const container = document.getElementById('render-container');
+
+        // Solo productos DISPONIBLES (activos)
+        const activos = productosFiltrados.filter(p => p.estado !== 'AGOTADO');
+
+        if (activos.length === 0) {
+            alert("No hay productos activos para exportar.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Preparando catálogo...';
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'px', [1080, 1527], true); // formato revista vertical, comprimido
+            const W = 1080, H = 1527;
+
+            // 1. Logo
+            const logoB64 = await getBase64(CONFIG.logoUrl);
+
+            // 2. Agrupar por categoría -> subcategoría
+            const grupos = {};
+            activos.forEach(p => {
+                const cat = p.cat_nom || "General";
+                const sub = p.sub_nom || "";
+                if (!grupos[cat]) grupos[cat] = { items: [], subs: {} };
+                if (sub) {
+                    if (!grupos[cat].subs[sub]) grupos[cat].subs[sub] = [];
+                    grupos[cat].subs[sub].push(p);
+                } else {
+                    grupos[cat].items.push(p);
+                }
+            });
+            const catNames = Object.keys(grupos).sort();
+
+            // 3. Precargar y redimensionar imágenes de productos (con progreso)
+            const catalogImgCache = new Map(); // cache local: redimensionada y comprimida para el catálogo
+            const resizeImage = (b64, maxSize = 600) => new Promise((resolve) => {
+                if (!b64 || !b64.startsWith('data:image')) return resolve(b64 || PLACEHOLDER_BASE64);
+                const img = new Image();
+                img.onload = () => {
+                    let { width: w, height: h } = img;
+                    if (w <= maxSize && h <= maxSize) return resolve(b64);
+                    const ratio = Math.min(maxSize / w, maxSize / h);
+                    w = Math.round(w * ratio); h = Math.round(h * ratio);
+                    const c = document.createElement('canvas');
+                    c.width = w; c.height = h;
+                    const ctx = c.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(c.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => resolve(PLACEHOLDER_BASE64);
+                img.src = b64;
+            });
+
+            let cargadas = 0;
+            const BATCH = 10; // Limitar concurrencia para no saturar el Apps Script / Drive
+
+            // Deduplicar URLs (varios productos pueden compartir la misma imagen)
+            const urlsUnicas = [...new Set(activos.map(p => p.imagen))];
+            const total = urlsUnicas.length;
+
+            const fetchYRedimensionar = async (url) => {
+                let b64 = _imgCache.get(url);
+                if (!b64) {
+                    b64 = await getBase64(url);
+                    _imgCache.set(url, b64);
+                }
+                const resized = await resizeImage(b64, 600);
+                cargadas++;
+                btn.innerHTML = `<i class="bi bi-hourglass-split"></i> Cargando imágenes (${cargadas}/${total})...`;
+                return resized;
+            };
+
+            for (let i = 0; i < urlsUnicas.length; i += BATCH) {
+                const lote = urlsUnicas.slice(i, i + BATCH);
+                const resultados = await Promise.all(lote.map(url => fetchYRedimensionar(url)));
+                lote.forEach((url, idx) => catalogImgCache.set(url, resultados[idx]));
+            }
+
+
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Maquetando páginas...';
+
+            // ---- helper: añade un canvas (página renderizada) al PDF ----
+            let firstPage = true;
+            const addCanvasPage = async (innerHTML, extraClass = "") => {
+                container.innerHTML = "";
+                const pageDiv = document.createElement('div');
+                pageDiv.className = "mag-page " + extraClass;
+                pageDiv.innerHTML = innerHTML;
+                container.appendChild(pageDiv);
+                await esperarImagenes(pageDiv);
+                await new Promise(r => setTimeout(r, 250));
+                const canvas = await html2canvas(pageDiv, {
+                    useCORS: false, allowTaint: false, scale: 1,
+                    backgroundColor: '#ffffff', logging: false,
+                    width: W, height: H
+                });
+                const imgData = canvas.toDataURL("image/jpeg", 0.78);
+                if (!firstPage) doc.addPage([W, H], 'p');
+                doc.addImage(imgData, 'JPEG', 0, 0, W, H);
+                firstPage = false;
+            };
+
+            const ITEMS_PER_PAGE = parseInt(document.getElementById('catalogGridSelect').value, 10) || 4;
+            const GRID_COLS = ITEMS_PER_PAGE === 9 ? 3 : 2;
+            const IMG_HEIGHT = ITEMS_PER_PAGE === 4 ? 260 : (ITEMS_PER_PAGE === 6 ? 200 : 150);
+            const SHOW_DESC = ITEMS_PER_PAGE <= 6;
+            const TITLE_SIZE = ITEMS_PER_PAGE === 4 ? 28 : (ITEMS_PER_PAGE === 6 ? 22 : 18);
+            const PRICE_SIZE = ITEMS_PER_PAGE === 4 ? 34 : (ITEMS_PER_PAGE === 6 ? 28 : 22);
+            const CARD_PAD = ITEMS_PER_PAGE === 9 ? 16 : 26;
+            const GRID_GAP = ITEMS_PER_PAGE === 9 ? 18 : 30;
+
+            // ---- estilos compartidos de las páginas de revista (inyectados inline) ----
+            const magStyles = `
+                <style>
+                .mag-page { width:${W}px; height:${H}px; box-sizing:border-box; background:#fff; font-family:'Plus Jakarta Sans', sans-serif; position:relative; overflow:hidden; }
+                .mag-cover { display:flex; flex-direction:column; }
+                .mag-cover .cover-top { flex:1; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, ${CONFIG.color_dark}, #0d2238); position:relative; }
+                .mag-cover .cover-top img.logo-big { max-width:55%; max-height:55%; object-fit:contain; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3)); }
+                .mag-cover .cover-badge { position:absolute; top:60px; right:60px; background:${CONFIG.color_primary}; color:white; padding:18px 36px; border-radius:16px; font-weight:800; font-size:34px; text-transform:uppercase; letter-spacing:2px; }
+                .mag-cover .cover-bottom { background:white; padding:60px; }
+                .mag-cover .cover-bottom h1 { font-size:72px; color:${CONFIG.color_dark}; font-weight:800; margin:0 0 10px 0; }
+                .mag-cover .cover-bottom p { font-size:26px; color:#64748b; font-weight:600; margin:0; }
+                .mag-cover .cover-bar { height:14px; background:${CONFIG.color_primary}; }
+
+                .mag-index { padding:70px; }
+                .mag-index h1 { font-size:64px; color:${CONFIG.color_dark}; font-weight:800; border-bottom:6px solid ${CONFIG.color_primary}; padding-bottom:25px; margin:0 0 40px 0; }
+                .mag-index .idx-row { display:flex; justify-content:space-between; align-items:baseline; padding:18px 0; border-bottom:2px dotted #e2e8f0; font-size:30px; }
+                .mag-index .idx-row.idx-sub { padding-left:50px; font-size:24px; color:#64748b; }
+                .mag-index .idx-row .idx-name { font-weight:800; color:${CONFIG.color_dark}; }
+                .mag-index .idx-row.idx-sub .idx-name { font-weight:600; color:#475569; }
+                .mag-index .idx-row .idx-page { font-weight:800; color:${CONFIG.color_primary}; }
+
+                .mag-divider { display:flex; align-items:flex-end; justify-content:flex-start; position:relative; }
+                .mag-divider .div-bg { position:absolute; inset:0; background:linear-gradient(135deg, ${CONFIG.color_dark}, ${CONFIG.color_info}); }
+                .mag-divider .div-content { position:relative; z-index:1; padding:80px; }
+                .mag-divider .div-eyebrow { color:${CONFIG.color_primary}; font-weight:800; font-size:28px; text-transform:uppercase; letter-spacing:6px; margin-bottom:20px; }
+                .mag-divider h1 { color:white; font-size:96px; font-weight:800; margin:0; line-height:1.05; }
+                .mag-divider .div-sub { color:rgba(255,255,255,0.85); font-size:36px; font-weight:600; margin-top:18px; }
+
+                .mag-products { padding:50px 60px; display:flex; flex-direction:column; }
+                .mag-products .ph-header { display:flex; justify-content:space-between; align-items:center; border-bottom:5px solid ${CONFIG.color_primary}; padding-bottom:18px; margin-bottom:30px; }
+                .mag-products .ph-cat { font-size:26px; font-weight:800; color:${CONFIG.color_dark}; text-transform:uppercase; letter-spacing:3px; }
+                .mag-products .ph-sub { font-size:36px; font-weight:800; color:${CONFIG.color_primary}; text-transform:uppercase; }
+                .mag-grid { display:grid; grid-template-columns: repeat(${GRID_COLS}, 1fr); gap:${GRID_GAP}px; flex:1; }
+                .mag-card { border:2px solid #f1f5f9; border-radius:24px; padding:${CARD_PAD}px; display:flex; flex-direction:column; align-items:center; text-align:center; background:#fff; }
+                .mag-card .mc-img { width:100%; height:${IMG_HEIGHT}px; display:flex; align-items:center; justify-content:center; background:#f8fafc; border-radius:18px; overflow:hidden; margin-bottom:${ITEMS_PER_PAGE === 9 ? 10 : 18}px; }
+                .mag-card .mc-img img { max-width:100%; max-height:100%; object-fit:contain; }
+                .mag-card h3 { font-size:${TITLE_SIZE}px; font-weight:800; color:${CONFIG.color_dark}; margin:0 0 8px 0; line-height:1.2; }
+                .mag-card .mc-desc { font-size:18px; color:#64748b; line-height:1.4; margin-bottom:14px; min-height:50px; }
+                .mag-card .mc-price { font-size:${PRICE_SIZE}px; font-weight:800; color:${CONFIG.color_primary}; margin:0; }
+                .mag-footer { margin-top:30px; display:flex; justify-content:space-between; align-items:center; border-top:2px solid #f1f5f9; padding-top:20px; }
+                .mag-footer .mf-brand { display:flex; align-items:center; gap:14px; }
+                .mag-footer .mf-brand img { height:50px; }
+                .mag-footer .mf-brand span { font-size:24px; font-weight:800; color:${CONFIG.color_dark}; }
+                .mag-footer .mf-page { font-size:24px; font-weight:800; color:${CONFIG.color_primary}; background:#f1f5f9; padding:8px 24px; border-radius:12px; }
+                </style>
+            `;
+
+            // ---- PÁGINA 1: PORTADA ----
+            const cover = `${magStyles}
+                <div class="mag-cover" style="height:${H}px;">
+                    <div class="cover-top">
+                        <div class="cover-badge">Catálogo</div>
+                        <img class="logo-big" src="${logoB64 || ''}" onerror="this.style.display='none'">
+                    </div>
+                    <div class="cover-bar"></div>
+                    <div class="cover-bottom">
+                        <h1>${CONFIG.brandName.trim()}</h1>
+                        <p>Catálogo de Productos — ${new Date().toLocaleDateString('es-GT', {year:'numeric', month:'long'})}</p>
+                    </div>
+                </div>`;
+            await addCanvasPage(cover);
+
+            // ---- Construir lista de páginas de productos para calcular numeración del índice ----
+            // Pre-calcular estructura: para cada categoría, lista de "bloques" (items sin sub + cada subcategoría)
+            const estructura = catNames.map(cat => {
+                const g = grupos[cat];
+                const subNames = Object.keys(g.subs).sort();
+                return { cat, itemsSinSub: g.items, subs: subNames.map(s => ({ nombre: s, items: g.subs[s] })) };
+            });
+
+            // Calcular número de página de cada categoría (divider) y subcategoría (primer chunk)
+            // Página 1 = portada, Página 2 = índice. Productos empiezan en página 3.
+            let pageCounter = 3; // 1 divider page consume 1 page; luego chunks de productos
+            const indiceEntradas = []; // {tipo, nombre, pagina}
+            estructura.forEach(grp => {
+                indiceEntradas.push({ tipo: 'cat', nombre: grp.cat, pagina: pageCounter });
+                pageCounter += 1; // divider page
+
+                if (grp.itemsSinSub.length > 0) {
+                    const chunks = Math.ceil(grp.itemsSinSub.length / ITEMS_PER_PAGE);
+                    pageCounter += chunks;
+                }
+                grp.subs.forEach(sub => {
+                    indiceEntradas.push({ tipo: 'sub', nombre: sub.nombre, pagina: pageCounter });
+                    const chunks = Math.ceil(sub.items.length / ITEMS_PER_PAGE);
+                    pageCounter += chunks;
+                });
+            });
+
+            // ---- PÁGINA 2: ÍNDICE ----
+            let idxRows = "";
+            indiceEntradas.forEach(e => {
+                if (e.tipo === 'cat') {
+                    idxRows += `<div class="idx-row"><span class="idx-name">${e.nombre}</span><span class="idx-page">${e.pagina}</span></div>`;
+                } else {
+                    idxRows += `<div class="idx-row idx-sub"><span class="idx-name">${e.nombre}</span><span class="idx-page">${e.pagina}</span></div>`;
+                }
+            });
+            const indexHtml = `${magStyles}
+                <div class="mag-index" style="height:${H}px;">
+                    <h1>Índice</h1>
+                    ${idxRows}
+                </div>`;
+            await addCanvasPage(indexHtml);
+
+            // ---- helper para renderizar un chunk de productos en grid ----
+            const renderChunk = (chunk, catLabel, subLabel, pageNumDisplay) => {
+                let cards = "";
+                chunk.forEach(p => {
+                    const src = catalogImgCache.get(p.imagen) || PLACEHOLDER_BASE64;
+                    cards += `<div class="mag-card">
+                        <div class="mc-img"><img src="${src}"></div>
+                        <h3>${p.titulo}</h3>
+                        ${SHOW_DESC ? `<div class="mc-desc">${p.desc || ""}</div>` : ''}
+                        <p class="mc-price">Q${parseFloat(p.precio || 0).toFixed(2)}</p>
+                    </div>`;
+                });
+                // rellenar celdas vacías si el chunk tiene menos de ITEMS_PER_PAGE, para mantener grid
+                for (let i = chunk.length; i < ITEMS_PER_PAGE; i++) {
+                    cards += `<div></div>`;
+                }
+                return `${magStyles}
+                    <div class="mag-products" style="height:${H}px;">
+                        <div class="ph-header">
+                            <span class="ph-cat">${catLabel}</span>
+                            <span class="ph-sub">${subLabel || ''}</span>
+                        </div>
+                        <div class="mag-grid">${cards}</div>
+                        <div class="mag-footer">
+                            <div class="mf-brand">
+                                <img src="${logoB64 || ''}" onerror="this.style.display='none'">
+                                <span>${CONFIG.brandName.trim()}</span>
+                            </div>
+                            <div class="mf-page">${pageNumDisplay}</div>
+                        </div>
+                    </div>`;
+            };
+
+            // ---- PÁGINAS DE CATEGORÍAS / SUBCATEGORÍAS ----
+            let currentPage = 3;
+            for (const grp of estructura) {
+                // Divider de categoría
+                const dividerHtml = `${magStyles}
+                    <div class="mag-divider" style="height:${H}px;">
+                        <div class="div-bg"></div>
+                        <div class="div-content">
+                            <div class="div-eyebrow">Categoría</div>
+                            <h1>${grp.cat}</h1>
+                            <div class="div-sub">${grp.subs.length > 0 ? grp.subs.map(s => s.nombre).join(' · ') : ''}</div>
+                        </div>
+                    </div>`;
+                btn.innerHTML = `<i class="bi bi-hourglass-split"></i> Generando: ${grp.cat}...`;
+                await addCanvasPage(dividerHtml);
+                currentPage++;
+
+                // Items sin subcategoría
+                if (grp.itemsSinSub.length > 0) {
+                    for (let i = 0; i < grp.itemsSinSub.length; i += ITEMS_PER_PAGE) {
+                        const chunk = grp.itemsSinSub.slice(i, i + ITEMS_PER_PAGE);
+                        await addCanvasPage(renderChunk(chunk, grp.cat, "", currentPage));
+                        currentPage++;
+                    }
+                }
+
+                // Subcategorías
+                for (const sub of grp.subs) {
+                    btn.innerHTML = `<i class="bi bi-hourglass-split"></i> Generando: ${grp.cat} / ${sub.nombre}...`;
+                    for (let i = 0; i < sub.items.length; i += ITEMS_PER_PAGE) {
+                        const chunk = sub.items.slice(i, i + ITEMS_PER_PAGE);
+                        await addCanvasPage(renderChunk(chunk, grp.cat, sub.nombre, currentPage));
+                        currentPage++;
+                    }
+                }
+            }
+
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando PDF...';
+            doc.save(`Catalogo_${CONFIG.brandName.trim()}.pdf`);
+
+        } catch (e) {
+            console.error(e);
+            alert("Error al generar el catálogo.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            container.innerHTML = "";
         }
     }
 

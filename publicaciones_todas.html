@@ -87,16 +87,7 @@
         .logo-controls { display: flex; align-items: flex-start; gap: 12px; }
         .logo-drag-tip { font-size: 0.7rem; color: #888; margin-top: 6px; line-height: 1.4; }
 
-        /* Filtro disponibilidad */
-        .disp-filter-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-        .btn-disp { padding: 5px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: 1.5px solid #dde3ee; background: #f8fafc; color: #444; display: flex; align-items: center; gap: 5px; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
-        .btn-disp:hover { border-color: var(--dark); color: var(--dark); }
-        .btn-disp.active-all  { background: var(--dark); color: white; border-color: var(--dark); }
-        .btn-disp.active-disp { background: #e8f5e9; color: #1a8a3d; border-color: #1a8a3d; }
-        .btn-disp.active-ago  { background: #ffebee; color: #c0392b; border-color: #c0392b; }
-
-        /* Badge agotado en select */
-        option.agotado-opt { color: #c0392b; }
+        /* Status/loader */
         .status-bar { font-size: 0.72rem; color: #888; text-align: center; padding: 6px 0; min-height: 22px; }
         .status-bar.ok { color: #1a8a3d; font-weight: 600; }
         .status-bar.err { color: #c0392b; font-weight: 600; }
@@ -152,14 +143,6 @@
                 <i class="bi bi-chevron-up toggle-icon"></i>
             </div>
             <div class="section-block-body open">
-                <div class="form-group">
-                    <label>Disponibilidad</label>
-                    <div class="disp-filter-row">
-                        <button class="btn-disp active-all" id="dispTodos"      onclick="setFiltroDisp('todos')"><i class="bi bi-grid"></i> Todos</button>
-                        <button class="btn-disp"            id="dispDisponibles" onclick="setFiltroDisp('disponibles')"><i class="bi bi-check-circle"></i> Disponibles</button>
-                        <button class="btn-disp"            id="dispAgotados"   onclick="setFiltroDisp('agotados')"><i class="bi bi-x-circle"></i> Agotados</button>
-                    </div>
-                </div>
                 <div class="form-group">
                     <label>Categoría</label>
                     <select id="catFilter" onchange="aplicarFiltros()">
@@ -338,7 +321,6 @@ const COMERCIAL_CONFIG = {
 const COLOR_PRESETS = ["#007BC4","#F47C20","#E91E63","#4CAF50","#9C27B0","#FF5722","#009688","#F44336","#1C3F60","#FFD600","#00BCD4","#FF9800"];
 const PROXY = "https://images.weserv.nl/?url=";
 let productosGlobal = [];
-let filtroDisp = "todos";
 let logoPos = { x: null, y: null, preset: "tl" }; // null = usa preset
 let logoSizeRatio = 0.14;
 let isDraggingLogo = false;
@@ -359,16 +341,6 @@ window.onload = () => {
     setupCheckboxes();
     setupLogoPosGrid();
 };
-
-// ---- Filtro disponibilidad ----
-function setFiltroDisp(val) {
-    filtroDisp = val;
-    document.getElementById('dispTodos').className       = 'btn-disp' + (val === 'todos'        ? ' active-all'  : '');
-    document.getElementById('dispDisponibles').className = 'btn-disp' + (val === 'disponibles'  ? ' active-disp' : '');
-    document.getElementById('dispAgotados').className    = 'btn-disp' + (val === 'agotados'     ? ' active-ago'  : '');
-    aplicarFiltros();
-}
-
 
 // ---- Secciones colapsables ----
 function toggleBlock(header) {
@@ -451,8 +423,7 @@ async function cargarCatalogo() {
                 tituloGancho: partes[1] ? partes[1].trim() : partes[0].trim(),
                 imgP: r[2], imgG: r[3],
                 cat: r[5] || "", subCat: r[7] || "",
-                desc: r[8] || "", precio: r[9] || "",
-                estado: (r[10] || "DISPONIBLE").toUpperCase().trim()
+                desc: r[8] || "", precio: r[9] || ""
             };
         });
         productosGlobal.sort((a,b) => a.subCat.localeCompare(b.subCat));
@@ -493,8 +464,6 @@ function aplicarFiltros() {
     let filtrados = productosGlobal;
     if (cat) filtrados = filtrados.filter(p => p.cat === cat);
     if (sub) filtrados = filtrados.filter(p => p.subCat === sub);
-    if (filtroDisp === 'disponibles') filtrados = filtrados.filter(p => p.estado !== 'AGOTADO');
-    if (filtroDisp === 'agotados')    filtrados = filtrados.filter(p => p.estado === 'AGOTADO');
 
     const select = document.getElementById('productSelect');
     const prevVal = select.value;
@@ -508,9 +477,7 @@ function aplicarFiltros() {
             select.appendChild(group);
         }
         const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.estado === 'AGOTADO' ? `⛔ ${p.tituloDisplay}` : p.tituloDisplay;
-        if (p.estado === 'AGOTADO') opt.className = 'agotado-opt';
+        opt.value = p.id; opt.textContent = p.tituloDisplay;
         (group || select).appendChild(opt);
     });
     if (prevVal) select.value = prevVal;
@@ -734,35 +701,6 @@ async function dibujarArte(canvas, imgUrl, p, platform, color) {
         // Guarda referencia para drag
         canvas._logoMeta = { x, y, logoW, logoH, logo, p, platform, color };
     } catch(e) {}
-
-    // Badge AGOTADO
-    if (p.estado === 'AGOTADO') {
-        const bw = Math.round(w * 0.38);
-        const bh = Math.round(w * 0.092);
-        const bx = Math.round((w - bw) / 2);
-        const by = Math.round((h - bh) / 2);
-        const r = bh / 2;
-        // Fondo rojo semitransparente con bordes redondeados
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(bx + r, by);
-        ctx.arcTo(bx + bw, by, bx + bw, by + bh, r);
-        ctx.arcTo(bx + bw, by + bh, bx, by + bh, r);
-        ctx.arcTo(bx, by + bh, bx, by, r);
-        ctx.arcTo(bx, by, bx + bw, by, r);
-        ctx.closePath();
-        ctx.fillStyle = "rgba(192,57,43,0.88)";
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,0.6)";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        // Texto
-        ctx.textAlign = "center";
-        ctx.fillStyle = "white";
-        ctx.font = `bold ${Math.round(w * 0.052)}px Arial`;
-        ctx.fillText("⛔  AGOTADO", bx + bw / 2, by + bh * 0.67);
-        ctx.restore();
-    }
 }
 
 // ===================== DRAG LOGO =====================
