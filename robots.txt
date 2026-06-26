@@ -1,0 +1,14 @@
+# robots.txt — Flamax
+# https://flamax.rompecabezas.online/
+
+User-agent: *
+Disallow:
+Allow: /
+
+# Bloquear archivos que no necesitan indexarse
+Disallow: /img/
+Disallow: /*.ico$
+Disallow: /*.png$
+Disallow: /*.jpg$
+
+Sitemap: https://flamax.rompecabezas.online/sitemap.xml
