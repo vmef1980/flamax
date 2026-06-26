@@ -112,6 +112,62 @@
         .empty-state i { font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 12px; }
         .empty-state p { font-size: 0.9rem; }
 
+        /* ── Búsqueda rápida ── */
+        .search-wrap { position: relative; margin-bottom: 8px; }
+        .search-wrap .si { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 0.82rem; pointer-events: none; }
+        .search-wrap input { padding-left: 30px !important; }
+        .btn-clear-srch { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #bbb; font-size: 0.82rem; padding: 0; line-height: 1; display: none; }
+        .btn-clear-srch:hover { color: #c0392b; }
+        #searchCount { font-size: 0.67rem; color: var(--accent); font-weight: 700; min-height: 13px; margin-bottom: 4px; }
+
+        /* ── Canvas card mejorado ── */
+        .canvas-card { background: #1e293b; padding: 12px; border-radius: 16px; box-shadow: 0 12px 32px rgba(0,0,0,0.22); position: relative; border: 1px solid rgba(255,255,255,0.06); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+        .canvas-card:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,0.28); }
+        .canvas-card canvas { width: 100%; height: auto; border-radius: 10px; display: block; cursor: crosshair; }
+        .canvas-label { font-size: 0.68rem; color: #94a3b8; text-align: center; margin-top: 8px; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.04em; }
+
+        /* ── Botones de descarga por imagen ── */
+        .card-actions { display: flex; gap: 6px; margin-top: 8px; }
+        .btn-dl-solo { flex: 1; padding: 7px 0; border: none; border-radius: 8px; font-size: 0.7rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; font-family: 'DM Sans', sans-serif; letter-spacing: 0.03em; transition: opacity 0.15s, transform 0.1s; }
+        .btn-dl-solo:active { transform: scale(0.97); }
+        .btn-dl-png { background: #1a8a3d; color: white; }
+        .btn-dl-png:hover { opacity: 0.88; }
+
+        /* ── Sidebar header mejorado ── */
+        .sidebar-header { padding: 20px 20px 16px; background: linear-gradient(135deg, #1C3F60 0%, #0f2942 100%); color: white; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.07em; }
+        .sidebar-header p { font-size: 0.67rem; opacity: 0.55; margin-top: 3px; letter-spacing: 0.04em; }
+
+        /* ── Status bar mejorado ── */
+        .status-bar { font-size: 0.71rem; color: #888; text-align: center; padding: 6px 10px; min-height: 26px; background: #f0f4fa; border-radius: 8px; margin-bottom: 4px; border: 1px solid #e8edf5; transition: background 0.2s; }
+        .status-bar.ok { color: #1a8a3d; font-weight: 700; background: #f0faf4; border-color: #c3e6cb; }
+        .status-bar.err { color: #c0392b; font-weight: 700; background: #fff0f0; border-color: #f5c6cb; }
+        .status-bar.loading { color: var(--dark); font-weight: 600; background: #eef2fb; border-color: #c5d0e8; }
+
+        /* ── Workspace mejorado ── */
+        .workspace { flex-grow: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; background: linear-gradient(160deg, #1a2332 0%, #0f1923 100%); position: relative; }
+        .canvas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; width: 100%; }
+        .empty-state { color: #4a5568; text-align: center; padding: 80px 40px; }
+        .empty-state i { font-size: 3rem; opacity: 0.2; display: block; margin-bottom: 14px; }
+        .empty-state p { font-size: 0.9rem; line-height: 1.6; }
+
+        /* ── Section blocks más suaves ── */
+        .section-block { background: #f9fbff; border: 1px solid #e4eaf5; border-radius: 11px; margin-bottom: 10px; overflow: hidden; }
+        .section-block-header { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--dark); user-select: none; }
+        .section-block-header:hover { background: #eef3fc; }
+
+        /* ── Botones principales con sombra ── */
+        .btn-success { background: linear-gradient(135deg, #1a8a3d, #177535); color: white; box-shadow: 0 3px 10px rgba(26,138,61,0.2); }
+        .btn-pdf     { background: linear-gradient(135deg, #c0392b, #a93226); color: white; box-shadow: 0 3px 10px rgba(192,57,43,0.2); }
+        .btn-primary { background: linear-gradient(135deg, #1C3F60, #163352); color: white; box-shadow: 0 3px 10px rgba(28,63,96,0.2); }
+        .btn-ai      { background: linear-gradient(135deg, #6c3fd6, #5930b8); color: white; box-shadow: 0 3px 10px rgba(108,63,214,0.2); }
+
+        /* ── Exportar ZIP destacado ── */
+        .btn-zip { background: linear-gradient(135deg, #007BC4, #005e97); color: white; box-shadow: 0 3px 10px rgba(0,123,196,0.2); }
+        .export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .export-grid .btn { margin-bottom: 0; }
+        .btn-full { grid-column: 1 / -1; }
+
         @media (max-width: 850px) {
             body { flex-direction: column; overflow: auto; height: auto; }
             .sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid #ddd; }
@@ -152,6 +208,15 @@
                 <i class="bi bi-chevron-up toggle-icon"></i>
             </div>
             <div class="section-block-body open">
+                <div class="form-group">
+                    <label>Buscar producto</label>
+                    <div class="search-wrap">
+                        <i class="bi bi-search si"></i>
+                        <input type="text" id="searchInput" placeholder="Código, nombre, descripción..." oninput="onSearchInput(this)">
+                        <button class="btn-clear-srch" id="btnClearSrch" onclick="clearSearch()" title="Limpiar"><i class="bi bi-x-circle-fill"></i></button>
+                    </div>
+                    <div id="searchCount"></div>
+                </div>
                 <div class="form-group">
                     <label>Disponibilidad</label>
                     <div class="disp-filter-row">
@@ -306,8 +371,12 @@
                 <i class="bi bi-chevron-up toggle-icon"></i>
             </div>
             <div class="section-block-body open">
-                <button class="btn btn-success" id="btnDescargar" onclick="descargarTodo()"><i class="bi bi-images"></i> Descargar imágenes PNG</button>
-                <button class="btn btn-pdf" id="btnPDF" onclick="exportarPDF()"><i class="bi bi-file-earmark-pdf"></i> Exportar como PDF</button>
+                <div class="export-grid">
+                    <button class="btn btn-zip" id="btnDescargar" onclick="descargarTodo()"><i class="bi bi-file-zip"></i> ZIP</button>
+                    <button class="btn btn-pdf" id="btnPDF" onclick="exportarPDF()"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+                    <button class="btn btn-success btn-full" onclick="descargarIndividual()"><i class="bi bi-download"></i> Descargar imagen visible</button>
+                </div>
+                <div style="font-size:0.67rem;color:#aaa;margin-top:6px;text-align:center;">ZIP = todas · Individual = imagen activa</div>
             </div>
         </div>
 
@@ -495,6 +564,21 @@ function aplicarFiltros() {
     if (sub) filtrados = filtrados.filter(p => p.subCat === sub);
     if (filtroDisp === 'disponibles') filtrados = filtrados.filter(p => p.estado !== 'AGOTADO');
     if (filtroDisp === 'agotados')    filtrados = filtrados.filter(p => p.estado === 'AGOTADO');
+    const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+    if (q) {
+        filtrados = filtrados.filter(p =>
+            p.id.toLowerCase().includes(q) ||
+            p.tituloDisplay.toLowerCase().includes(q) ||
+            p.tituloGancho.toLowerCase().includes(q) ||
+            p.desc.toLowerCase().includes(q) ||
+            p.subCat.toLowerCase().includes(q) ||
+            p.cat.toLowerCase().includes(q)
+        );
+        document.getElementById('searchCount').textContent = `${filtrados.length} resultado${filtrados.length !== 1 ? 's' : ''}`;
+    } else {
+        const sc = document.getElementById('searchCount');
+        if (sc) sc.textContent = '';
+    }
 
     const select = document.getElementById('productSelect');
     const prevVal = select.value;
@@ -594,6 +678,15 @@ async function renderizarPublicidad() {
         lbl.className = "canvas-label";
         lbl.textContent = `Img ${index+1}/${imagenes.length} · ${getPlatformLabel(platform)}`;
         card.appendChild(lbl);
+        // Botón descarga individual por card
+        const actions = document.createElement('div');
+        actions.className = 'card-actions';
+        const btnDl = document.createElement('button');
+        btnDl.className = 'btn-dl-solo btn-dl-png';
+        btnDl.innerHTML = '<i class="bi bi-download"></i> Descargar PNG';
+        btnDl.onclick = () => bajarCanvas(canvas, `img${index+1}_${p.tituloDisplay}`);
+        actions.appendChild(btnDl);
+        card.appendChild(actions);
         grid.appendChild(card);
         await dibujarArte(canvas, url, p, platform, color);
         setupLogoInteraction(canvas, p, platform, color);
@@ -1002,6 +1095,45 @@ function generarHashtagsLocales(p) {
     shuffled.forEach(agregar);
 
     return final;
+}
+
+// ===================== BÚSQUEDA RÁPIDA =====================
+function onSearchInput(inp) {
+    document.getElementById('btnClearSrch').style.display = inp.value ? 'block' : 'none';
+    aplicarFiltros();
+}
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('btnClearSrch').style.display = 'none';
+    document.getElementById('searchCount').textContent = '';
+    aplicarFiltros();
+}
+
+// ===================== DESCARGA INDIVIDUAL =====================
+function descargarIndividual() {
+    const canvases = document.querySelectorAll('#previewArea canvas');
+    if (!canvases.length) { setStatus("⚠️ Genera las imágenes primero", "err"); return; }
+    // Descarga el primer canvas visible (el que está más arriba en pantalla)
+    const area = document.getElementById('previewArea');
+    const areaRect = area.getBoundingClientRect();
+    let target = null;
+    for (const c of canvases) {
+        const r = c.getBoundingClientRect();
+        if (r.top >= areaRect.top - 10) { target = c; break; }
+    }
+    if (!target) target = canvases[0];
+    bajarCanvas(target);
+}
+function bajarCanvas(canvas, nombre) {
+    const pSelect = document.getElementById('productSelect');
+    const base = nombre || (pSelect.value ? pSelect.options[pSelect.selectedIndex].text : 'imagen');
+    const clean = base.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = clean + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setStatus('✅ Imagen descargada', 'ok');
+    setTimeout(() => setStatus('Listo.',''), 2000);
 }
 
 function buscarHashtags() {
