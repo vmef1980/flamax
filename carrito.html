@@ -8,6 +8,26 @@
 
   <link rel="icon" id="favicon" href="img/Flamax-v1.ico" type="image/x-icon">
 
+  <!-- ══ SEGURIDAD: Protección de contenido ══ -->
+  <script>
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "F12" || e.keyCode === 123) { e.preventDefault(); return false; }
+      if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C" || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) { e.preventDefault(); return false; }
+      if (e.ctrlKey && (e.key === "u" || e.key === "U" || e.keyCode === 85)) { e.preventDefault(); return false; }
+      if (e.ctrlKey && (e.key === "s" || e.key === "S" || e.keyCode === 83)) { e.preventDefault(); return false; }
+      if (e.ctrlKey && (e.key === "p" || e.key === "P" || e.keyCode === 80)) { e.preventDefault(); return false; }
+    });
+    document.addEventListener("contextmenu", function(e) { e.preventDefault(); return false; });
+    (function detectDevTools() {
+      const threshold = 160;
+      function check() {
+        if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+          document.body.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#c0392b;font-size:1.5rem;font-weight:bold;'>⚠️ Herramientas de desarrollador no permitidas.</div>";
+        }
+      }
+      setInterval(check, 1000);
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
   
